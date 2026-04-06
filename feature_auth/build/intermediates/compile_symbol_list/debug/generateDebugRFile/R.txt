@@ -1,0 +1,5 @@
+int drawable logo_icon 0x0
+int drawable onboarding_1 0x0
+int drawable onboarding_2 0x0
+int drawable setup_intro_bg 0x0
+int drawable splash_bg 0x0

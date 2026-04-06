@@ -1,0 +1,6 @@
+com.gym.feature.auth
+drawable logo_icon
+drawable onboarding_1
+drawable onboarding_2
+drawable setup_intro_bg
+drawable splash_bg
