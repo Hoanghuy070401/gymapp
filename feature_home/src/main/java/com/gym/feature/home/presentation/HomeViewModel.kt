@@ -8,12 +8,14 @@ import com.gym.core.base.GymLogger
 import com.gym.feature.home.data.VideoRepository
 import com.gym.feature.home.data.WorkoutVideo
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withTimeout
 import javax.inject.Inject
 
 // ── Domain models (local to home feature, YAGNI) ─────────────────────────
@@ -75,60 +77,64 @@ class HomeViewModel @Inject constructor(
         GymLogger.d(TAG, "loadHomeData uid=$uid")
 
         if (uid == null) {
-            GymLogger.w(TAG, "loadHomeData: no current user")
-            _state.update { it.copy(isLoading = false) }
+            GymLogger.w(TAG, "loadHomeData: no current user — showing defaults")
+            // Không có account → vẫn show content với seed videos
+            viewModelScope.launch {
+                val videos = videoRepository.getWorkoutVideos()
+                _state.update { it.copy(isLoading = false, workoutVideos = videos, recommendedRoutines = defaultRoutines(), recentArticles = defaultArticles()) }
+            }
             return
         }
 
         viewModelScope.launch {
             try {
-                // Load user profile
-                val snap = database.getReference("users/$uid").get().await()
-                val fullName = snap.child("fullName").value as? String ?: ""
-                GymLogger.d(TAG, "loadHomeData: profile loaded name='$fullName'")
+                withTimeout(FIREBASE_TIMEOUT_MS) {
+                    // Load user profile
+                    val snap = database.getReference("users/$uid").get().await()
+                    val fullName = snap.child("fullName").value as? String ?: ""
+                    GymLogger.d(TAG, "loadHomeData: profile loaded name='$fullName'")
 
-                // Load weekly challenge from Firebase
-                val challengeSnap = database.getReference("users/$uid/weeklyChallenge").get().await()
-                val currentCount = (challengeSnap.child("current").value as? Long)?.toInt() ?: 0
-                val targetCount = (challengeSnap.child("target").value as? Long)?.toInt() ?: 5
-                val challengeTitle = challengeSnap.child("title").value as? String ?: "Plank With Hip Twist"
-                GymLogger.d(TAG, "loadHomeData: challenge $currentCount/$targetCount '$challengeTitle'")
+                    // Load weekly challenge from Firebase
+                    val challengeSnap = database.getReference("users/$uid/weeklyChallenge").get().await()
+                    val currentCount = (challengeSnap.child("current").value as? Long)?.toInt() ?: 0
+                    val targetCount = (challengeSnap.child("target").value as? Long)?.toInt() ?: 5
+                    val challengeTitle = challengeSnap.child("title").value as? String ?: "Plank With Hip Twist"
+                    GymLogger.d(TAG, "loadHomeData: challenge $currentCount/$targetCount '$challengeTitle'")
 
-                val challenge = WeeklyChallenge(
-                    title = "Weekly Challenge",
-                    description = challengeTitle,
-                    current = currentCount,
-                    target = targetCount
-                )
+                    val challenge = WeeklyChallenge(
+                        title = "Weekly Challenge",
+                        description = challengeTitle,
+                        current = currentCount,
+                        target = targetCount
+                    )
 
-                // Static recommended routines (replace with repository when available)
-                val routines = listOf(
-                    RecommendedRoutine("1", "Squat Exercise", 12, 120),
-                    RecommendedRoutine("2", "Full Body Stretching", 12, 120),
-                    RecommendedRoutine("3", "Core Crusher", 20, 180),
-                    RecommendedRoutine("4", "Upper Body Blast", 25, 200)
-                )
+                    // Load workout videos (Firebase with seed fallback)
+                    val videos = videoRepository.getWorkoutVideos()
+                    GymLogger.d(TAG, "loadHomeData: loaded ${videos.size} workout videos")
 
-                // Static articles (replace with repository when available)
-                val articles = listOf(
-                    ArticleTip("1", "Supplement Guide..", "Nutrition"),
-                    ArticleTip("2", "15 Quick & Effective Daily Routines...", "Training")
-                )
-
-                GymLogger.i(TAG, "loadHomeData success: ${routines.size} routines, ${articles.size} articles")
-
-                // Load workout videos (Firebase with seed fallback)
-                val videos = videoRepository.getWorkoutVideos()
-                GymLogger.d(TAG, "loadHomeData: loaded ${videos.size} workout videos")
-
+                    GymLogger.i(TAG, "loadHomeData success: name='$fullName', ${videos.size} videos")
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            userName = fullName,
+                            recommendedRoutines = defaultRoutines(),
+                            workoutVideos = videos,
+                            recentArticles = defaultArticles(),
+                            activeChallenge = challenge,
+                            error = null
+                        )
+                    }
+                }
+            } catch (e: TimeoutCancellationException) {
+                GymLogger.w(TAG, "loadHomeData timeout — showing default content")
+                // Timeout: show app với seed videos, không block user
+                val videos = try { videoRepository.getWorkoutVideos() } catch (_: Exception) { emptyList() }
                 _state.update {
                     it.copy(
                         isLoading = false,
-                        userName = fullName,
-                        recommendedRoutines = routines,
+                        recommendedRoutines = defaultRoutines(),
                         workoutVideos = videos,
-                        recentArticles = articles,
-                        activeChallenge = challenge,
+                        recentArticles = defaultArticles(),
                         error = null
                     )
                 }
@@ -146,5 +152,20 @@ class HomeViewModel @Inject constructor(
 
     companion object {
         private const val TAG = "HomeViewModel"
+
+        /** Firebase RTDB timeout — nếu không phản hồi sau 8s thì dùng seed data */
+        private const val FIREBASE_TIMEOUT_MS = 8_000L
+
+        private fun defaultRoutines() = listOf(
+            RecommendedRoutine("1", "Squat Exercise", 12, 120),
+            RecommendedRoutine("2", "Full Body Stretching", 12, 120),
+            RecommendedRoutine("3", "Core Crusher", 20, 180),
+            RecommendedRoutine("4", "Upper Body Blast", 25, 200)
+        )
+
+        private fun defaultArticles() = listOf(
+            ArticleTip("1", "Supplement Guide..", "Nutrition"),
+            ArticleTip("2", "15 Quick & Effective Daily Routines...", "Training")
+        )
     }
 }

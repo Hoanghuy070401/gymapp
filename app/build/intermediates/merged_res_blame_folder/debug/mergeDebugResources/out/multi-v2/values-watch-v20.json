@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.gym.app-mergeDebugResources-77:/values-watch-v20/values-watch-v20.xml",
+            "outputFile": "com.gym.app-mergeDebugResources-80:/values-watch-v20/values-watch-v20.xml",
             "map": [
                 {
-                    "source": "/Users/nguyenhuy/.gradle/caches/transforms-4/2a24f7f573dfdd3ff459ad4d15f3db2b/transformed/play-services-auth-21.2.0/res/values-watch-v20/values.xml",
+                    "source": "/Users/nguyenhuy/.gradle/caches/transforms-4/80a2411ff7785d7edd7be181c0221611/transformed/play-services-auth-21.2.0/res/values-watch-v20/values.xml",
                     "from": {
                         "startLines": "4,5,6,7,8,9,10,11",
                         "startColumns": "0,0,0,0,0,0,0,0",

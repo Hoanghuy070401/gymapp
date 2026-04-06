@@ -27,7 +27,6 @@ import com.gym.core.designsystem.theme.AppColors
 import com.gym.core.designsystem.theme.AppSpacing
 import com.gym.core.designsystem.theme.AppTypography
 import com.gym.feature.home.data.WorkoutVideo
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 
 /**
  * Full-screen video detail screen.
@@ -50,7 +49,6 @@ fun VideoDetailScreen(
         return
     }
 
-    var playerRef by remember { mutableStateOf<YouTubePlayer?>(null) }
     var showQualitySheet by remember { mutableStateOf(false) }
     var subtitlesEnabled by remember { mutableStateOf(false) }
     var selectedQuality by remember { mutableStateOf("auto") }
@@ -94,8 +92,9 @@ fun VideoDetailScreen(
                             .clickable {
                                 selectedQuality = key
                                 showQualitySheet = false
-                                // Note: setPlaybackQuality is a hint; YouTube may override
-                                playerRef?.setPlaybackQuality(key)
+                                // setPlaybackQuality() not exposed by androidyoutubeplayer API.
+                                // Quality preference is stored in UI state only;
+                                // YouTube IFrame auto-selects based on network conditions.
                             }
                             .padding(horizontal = AppSpacing.ScreenHorizontal, vertical = 16.dp),
                         verticalAlignment = Alignment.CenterVertically,
@@ -153,7 +152,6 @@ fun VideoDetailScreen(
         YouTubePlayerComposable(
             videoId = videoId,
             autoPlay = true,
-            onPlayerReady = { player -> playerRef = player },
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(16f / 9f)

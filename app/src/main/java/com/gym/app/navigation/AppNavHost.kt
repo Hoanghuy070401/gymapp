@@ -2,8 +2,8 @@ package com.gym.app.navigation
 
 import android.content.Context
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -16,12 +16,7 @@ import com.gym.feature.auth.presentation.login.LoginScreen
 import com.gym.feature.auth.presentation.setpassword.SetPasswordScreen
 import com.gym.feature.auth.presentation.setup.SetupScreen
 import com.gym.feature.auth.presentation.signup.SignUpScreen
-import com.gym.feature.home.presentation.HomeScreen
-import com.gym.feature.home.presentation.video.VideoDetailScreen
 import com.gym.feature.onboarding.presentation.OnboardingScreen
-import com.gym.feature.workout.presentation.WorkoutScreen
-import androidx.navigation.NavType
-import androidx.navigation.navArgument
 
 private const val PREFS_NAME = "gym_prefs"
 private const val KEY_ONBOARDING_DONE = "onboarding_completed"
@@ -213,56 +208,9 @@ fun AppNavHost(
             )
         }
 
-        // --- MAIN APP ---
+        // --- MAIN APP SHELL (Home + Workout + VideoDetail + BottomNav) ---
         composable(Screen.Home.route) {
-            HomeScreen(
-                viewModel = hiltViewModel(),
-                onNavigateToSearch = {
-                    navController.navigate(Screen.Workout.route) // placeholder
-                },
-                onNavigateToNotifications = { /* TODO */ },
-                onNavigateToProfile = { /* TODO */ },
-                onNavigateToWorkout = {
-                    navController.navigate(Screen.Workout.route)
-                },
-                onNavigateToProgress = { /* TODO */ },
-                onNavigateToNutrition = { /* TODO */ },
-                onNavigateToCommunity = { /* TODO */ },
-                onNavigateToVideo = { video ->
-                    navController.navigate(Screen.VideoDetail.route(video.id))
-                }
-            )
-        }
-
-        composable(Screen.Workout.route) {
-            WorkoutScreen(viewModel = hiltViewModel())
-        }
-
-        // --- VIDEO DETAIL ---
-        composable(
-            route = Screen.VideoDetail.route,
-            arguments = listOf(
-                navArgument(Screen.VideoDetail.ARG_VIDEO_ID) { type = NavType.StringType }
-            )
-        ) { backStackEntry ->
-            val videoId = backStackEntry.arguments
-                ?.getString(Screen.VideoDetail.ARG_VIDEO_ID)
-                ?: return@composable
-
-            // Retrieve video from the HomeViewModel back-stack entry
-            val homeEntry = remember(backStackEntry) {
-                navController.getBackStackEntry(Screen.Home.route)
-            }
-            val homeViewModel: com.gym.feature.home.presentation.HomeViewModel =
-                hiltViewModel(homeEntry)
-            val videos = homeViewModel.state.value.workoutVideos
-            val video = videos.find { it.id == videoId }
-                ?: return@composable
-
-            VideoDetailScreen(
-                video = video,
-                onBack = { navController.popBackStack() }
-            )
+            MainScreen()
         }
     }
 }

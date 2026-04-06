@@ -1,9 +1,13 @@
 package com.gym.feature.home.presentation
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,9 +35,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
 import com.gym.core.designsystem.component.GymCard
-import com.gym.core.designsystem.component.GymScaffold
 import com.gym.core.designsystem.component.SectionHeader
 import com.gym.core.designsystem.theme.AppColors
 import com.gym.core.designsystem.theme.AppShape
@@ -57,69 +61,85 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.state.collectAsState()
 
-    GymScaffold(scrollable = true) {
-        // ── Header ─────────────────────────────────────────────────────
-        HomeHeaderSection(
-            userName = uiState.userName,
-            onSearchClick = onNavigateToSearch,
-            onNotificationsClick = onNavigateToNotifications,
-            onProfileClick = onNavigateToProfile
-        )
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(AppColors.Surface),
+        contentPadding = PaddingValues(top = 48.dp, bottom = 100.dp)
+    ) {
+        // ── Header ──────────────────────────────────────────────────────
+        item(key = "header") {
+            HomeHeaderSection(
+                userName = uiState.userName,
+                onSearchClick = onNavigateToSearch,
+                onNotificationsClick = onNavigateToNotifications,
+                onProfileClick = onNavigateToProfile
+            )
+            Spacer(modifier = Modifier.height(AppSpacing.Large))
+        }
 
-        Spacer(modifier = Modifier.height(AppSpacing.Large))
+        // ── Category Grid ────────────────────────────────────────────
+        item(key = "categories") {
+            HomeCategoryGrid(
+                onWorkoutClick = onNavigateToWorkout,
+                onProgressClick = onNavigateToProgress,
+                onNutritionClick = onNavigateToNutrition,
+                onCommunityClick = onNavigateToCommunity
+            )
+            Spacer(modifier = Modifier.height(AppSpacing.Large))
+        }
 
-        // ── Category Grid ──────────────────────────────────────────────
-        HomeCategoryGrid(
-            onWorkoutClick = onNavigateToWorkout,
-            onProgressClick = onNavigateToProgress,
-            onNutritionClick = onNavigateToNutrition,
-            onCommunityClick = onNavigateToCommunity
-        )
-
-        Spacer(modifier = Modifier.height(AppSpacing.Large))
-
-        // ── Recommended Sessions ───────────────────────────────────────
         if (uiState.isLoading) {
-            Box(
-                modifier = Modifier.fillMaxWidth().padding(AppSpacing.Large),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator(color = AppColors.ElectricLime)
+            item(key = "loading") {
+                Box(
+                    modifier = Modifier.fillMaxWidth().padding(AppSpacing.Large),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = AppColors.ElectricLime)
+                }
             }
         } else {
-            RecommendedSection(
-                routines = uiState.recommendedRoutines,
-                onSeeAll = {}
-            )
-
-            Spacer(modifier = Modifier.height(AppSpacing.Large))
-
-            // ── Workout Videos (YouTube) ────────────────────────────────
-            if (uiState.workoutVideos.isNotEmpty()) {
-                WorkoutVideosSection(
+            // ── Recommended Sessions ─────────────────────────────────
+            item(key = "recommendations") {
+                RecommendedSection(
                     videos = uiState.workoutVideos,
+                    routines = uiState.recommendedRoutines,
                     onVideoClick = onNavigateToVideo,
                     onSeeAll = {}
                 )
                 Spacer(modifier = Modifier.height(AppSpacing.Large))
             }
 
-            // ── Weekly Challenge ───────────────────────────────────────
-            uiState.activeChallenge?.let { challenge ->
-                WeeklyChallengeSection(challenge = challenge)
-                Spacer(modifier = Modifier.height(AppSpacing.Large))
+            // ── Workout Videos (YouTube) ─────────────────────────────
+            if (uiState.workoutVideos.isNotEmpty()) {
+                item(key = "videos") {
+                    WorkoutVideosSection(
+                        videos = uiState.workoutVideos,
+                        onVideoClick = onNavigateToVideo,
+                        onSeeAll = {}
+                    )
+                    Spacer(modifier = Modifier.height(AppSpacing.Large))
+                }
             }
 
-            // ── Articles & Tips ────────────────────────────────────────
+            // ── Weekly Challenge ────────────────────────────────────
+            uiState.activeChallenge?.let { challenge ->
+                item(key = "challenge") {
+                    WeeklyChallengeSection(challenge = challenge)
+                    Spacer(modifier = Modifier.height(AppSpacing.Large))
+                }
+            }
+
+            // ── Articles & Tips ─────────────────────────────────────
             if (uiState.recentArticles.isNotEmpty()) {
-                ArticlesSection(
-                    articles = uiState.recentArticles,
-                    onSeeAll = {}
-                )
+                item(key = "articles") {
+                    ArticlesSection(
+                        articles = uiState.recentArticles,
+                        onSeeAll = {}
+                    )
+                }
             }
         }
-
-        Spacer(modifier = Modifier.height(100.dp))
     }
 }
 
@@ -145,7 +165,7 @@ private fun HomeHeaderSection(
                 text = greeting,
                 style = AppTypography.headlineSmall.copy(
                     fontWeight = FontWeight.Bold,
-                    color = AppColors.ElectricLime
+                    color = AppColors.TonalLavender
                 )
             )
             Text(
@@ -182,11 +202,13 @@ private fun HeaderIconButton(onClick: () -> Unit, content: @Composable () -> Uni
     )
 }
 
-// ─── Recommended ───────────────────────────────────────────────────────────
+// ─── Recommended (with real images) ────────────────────────────────────────
 
 @Composable
 private fun RecommendedSection(
+    videos: List<WorkoutVideo>,
     routines: List<RecommendedRoutine>,
+    onVideoClick: (WorkoutVideo) -> Unit,
     onSeeAll: () -> Unit
 ) {
     Column {
@@ -194,32 +216,149 @@ private fun RecommendedSection(
             Text(
                 text = "See All ▷",
                 style = AppTypography.labelMedium,
-                color = AppColors.ElectricLime,
+                color = AppColors.TonalLavender,
                 modifier = Modifier.clickable(onClick = onSeeAll)
             )
         })
         Spacer(modifier = Modifier.height(AppSpacing.Medium))
-        Row(
-            modifier = Modifier
-                .horizontalScroll(rememberScrollState())
-                .padding(horizontal = AppSpacing.ScreenHorizontal),
+
+        // Use LazyRow for performance
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = AppSpacing.ScreenHorizontal),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            routines.forEach { routine ->
-                RecommendedCard(routine)
+            // If we have videos, show video cards (real thumbnails)
+            if (videos.isNotEmpty()) {
+                items(videos, key = { it.id }) { video ->
+                    RecommendedVideoCard(
+                        video = video,
+                        onClick = { onVideoClick(video) }
+                    )
+                }
+            } else {
+                // Fallback gradient cards when no videos yet
+                items(routines, key = { it.id }) { routine ->
+                    RecommendedGradientCard(routine = routine)
+                }
             }
         }
     }
 }
 
+/** Recommended card with real YouTube thumbnail — matches design spec */
 @Composable
-private fun RecommendedCard(routine: RecommendedRoutine) {
-    val gradients = listOf(
-        listOf(AppColors.PrimaryKinetic, AppColors.TonalLavender),
-        listOf(AppColors.TonalLavender, AppColors.PrimaryKinetic),
-        listOf(Color(0xFF1B5E20), Color(0xFF4CAF50)),
-        listOf(Color(0xFF4A148C), Color(0xFF7B1FA2))
-    )
+private fun RecommendedVideoCard(
+    video: WorkoutVideo,
+    onClick: () -> Unit
+) {
+    val thumbnailUrl = remember(video.videoId) {
+        video.videoId?.let { youtubeThumbnailUrl(it, YoutubeThumbnailQuality.HIGH) }
+    }
+
+    Box(
+        modifier = Modifier
+            .width(160.dp)
+            .height(180.dp)
+            .clip(AppShape.Large)
+            .clickable(onClick = onClick)
+    ) {
+        // Real YouTube thumbnail
+        if (thumbnailUrl != null) {
+            Image(
+                painter = rememberAsyncImagePainter(model = thumbnailUrl),
+                contentDescription = video.title,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+        } else {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Brush.linearGradient(listOf(AppColors.PrimaryKinetic, AppColors.TonalLavender)))
+            )
+        }
+
+        // Gradient overlay darkening bottom
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.7f))
+                    )
+                )
+        )
+
+        // Star icon top-right
+        Icon(
+            imageVector = Icons.Default.Star,
+            contentDescription = null,
+            tint = AppColors.TonalLavender,
+            modifier = Modifier
+                .size(18.dp)
+                .align(Alignment.TopEnd)
+                .padding(top = 6.dp, end = 6.dp)
+        )
+
+        // Play button center
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .clip(CircleShape)
+                .background(AppColors.TonalLavender.copy(alpha = 0.9f))
+                .align(Alignment.Center),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.PlayArrow,
+                contentDescription = "Play",
+                tint = Color.White,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+
+        // Title + meta at bottom
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(8.dp)
+        ) {
+            Text(
+                text = video.title,
+                style = AppTypography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                color = Color.White,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(
+                    text = "▶ ${video.durationMinutes} Mins",
+                    style = AppTypography.labelSmall.copy(fontSize = 9.sp),
+                    color = Color.White.copy(alpha = 0.85f)
+                )
+                if (video.durationMinutes > 0) {
+                    Text(
+                        text = "🔥 ${video.durationMinutes * 10} Kcal",
+                        style = AppTypography.labelSmall.copy(fontSize = 9.sp),
+                        color = Color.White.copy(alpha = 0.85f)
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** Fallback gradient card when no YouTube videos available */
+@Composable
+private fun RecommendedGradientCard(routine: RecommendedRoutine) {
+    val gradients = remember {
+        listOf(
+            listOf(AppColors.PrimaryKinetic, AppColors.TonalLavender),
+            listOf(AppColors.TonalLavender, AppColors.PrimaryKinetic),
+            listOf(Color(0xFF1B5E20), Color(0xFF4CAF50)),
+            listOf(Color(0xFF4A148C), Color(0xFF7B1FA2))
+        )
+    }
     val gradientColors = gradients[(routine.id.hashCode() and 0xFF) % gradients.size]
 
     Box(
@@ -235,11 +374,8 @@ private fun RecommendedCard(routine: RecommendedRoutine) {
             imageVector = Icons.Default.Star,
             contentDescription = null,
             tint = AppColors.OnSurface.copy(alpha = 0.6f),
-            modifier = Modifier
-                .size(20.dp)
-                .align(Alignment.TopEnd)
+            modifier = Modifier.size(20.dp).align(Alignment.TopEnd)
         )
-
         Column {
             Text(
                 text = routine.title,
@@ -249,30 +385,18 @@ private fun RecommendedCard(routine: RecommendedRoutine) {
                 overflow = TextOverflow.Ellipsis
             )
             Spacer(modifier = Modifier.height(4.dp))
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                MetaChip(text = "▶  ${routine.durationMinutes} Mins")
-                MetaChip(text = "🔥 ${routine.calories} Kcal")
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text("▶ ${routine.durationMinutes} Mins", style = AppTypography.labelSmall.copy(fontSize = 9.sp), color = AppColors.OnSurface)
+                Text("🔥 ${routine.calories} Kcal", style = AppTypography.labelSmall.copy(fontSize = 9.sp), color = AppColors.OnSurface)
             }
         }
     }
 }
 
-@Composable
-private fun MetaChip(text: String) {
-    Text(
-        text = text,
-        style = AppTypography.labelMedium.copy(fontSize = 9.sp),
-        color = AppColors.OnSurface.copy(alpha = 0.85f)
-    )
-}
-
 // ─── Workout Videos (YouTube) ──────────────────────────────────────────────
 
 @Composable
-private fun WorkoutVideosSection(
+internal fun WorkoutVideosSection(
     videos: List<WorkoutVideo>,
     onVideoClick: (WorkoutVideo) -> Unit,
     onSeeAll: () -> Unit
@@ -282,18 +406,16 @@ private fun WorkoutVideosSection(
             Text(
                 text = "See All ▷",
                 style = AppTypography.labelMedium,
-                color = AppColors.ElectricLime,
+                color = AppColors.TonalLavender,
                 modifier = Modifier.clickable(onClick = onSeeAll)
             )
         })
         Spacer(modifier = Modifier.height(AppSpacing.Medium))
-        Row(
-            modifier = Modifier
-                .horizontalScroll(rememberScrollState())
-                .padding(horizontal = AppSpacing.ScreenHorizontal),
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = AppSpacing.ScreenHorizontal),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            videos.forEach { video ->
+            items(videos, key = { "vid_${it.id}" }) { video ->
                 VideoCard(video = video, onClick = { onVideoClick(video) })
             }
         }
@@ -301,12 +423,9 @@ private fun WorkoutVideosSection(
 }
 
 @Composable
-private fun VideoCard(
-    video: WorkoutVideo,
-    onClick: () -> Unit
-) {
-    val thumbnailUrl = video.videoId?.let {
-        youtubeThumbnailUrl(it, YoutubeThumbnailQuality.HIGH)
+private fun VideoCard(video: WorkoutVideo, onClick: () -> Unit) {
+    val thumbnailUrl = remember(video.videoId) {
+        video.videoId?.let { youtubeThumbnailUrl(it, YoutubeThumbnailQuality.HIGH) }
     }
 
     Box(
@@ -316,38 +435,31 @@ private fun VideoCard(
             .clip(AppShape.Large)
             .clickable(onClick = onClick)
     ) {
-        // Thumbnail image
         if (thumbnailUrl != null) {
-            AsyncImage(
-                model = thumbnailUrl,
+            Image(
+                painter = rememberAsyncImagePainter(model = thumbnailUrl),
                 contentDescription = video.title,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
         } else {
-            // Fallback gradient
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(
-                        Brush.linearGradient(listOf(AppColors.PrimaryKinetic, AppColors.TonalLavender))
-                    )
+                    .background(Brush.linearGradient(listOf(AppColors.PrimaryKinetic, AppColors.TonalLavender)))
             )
         }
 
-        // Dark gradient overlay
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
                     Brush.verticalGradient(
-                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.75f)),
-                        startY = 0f
+                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.75f))
                     )
                 )
         )
 
-        // Play button — centered
         Box(
             modifier = Modifier
                 .size(40.dp)
@@ -356,19 +468,11 @@ private fun VideoCard(
                 .align(Alignment.Center),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = Icons.Default.PlayArrow,
-                contentDescription = "Play",
-                tint = Color.Black,
-                modifier = Modifier.size(24.dp)
-            )
+            Icon(Icons.Default.PlayArrow, contentDescription = "Play", tint = Color.Black, modifier = Modifier.size(24.dp))
         }
 
-        // Title + meta at bottom
         Column(
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(8.dp)
+            modifier = Modifier.align(Alignment.BottomStart).padding(8.dp)
         ) {
             Text(
                 text = video.title,
@@ -393,9 +497,7 @@ private fun VideoCard(
 @Composable
 private fun WeeklyChallengeSection(challenge: WeeklyChallenge) {
     GymCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = AppSpacing.ScreenHorizontal),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = AppSpacing.ScreenHorizontal),
         containerColor = AppColors.TonalLavender
     ) {
         Row(
@@ -419,7 +521,7 @@ private fun WeeklyChallengeSection(challenge: WeeklyChallenge) {
                     Text(
                         text = "${challenge.current} / ${challenge.target} completed",
                         style = AppTypography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                        color = AppColors.ElectricLime
+                        color = AppColors.Surface
                     )
                 }
             }
@@ -440,27 +542,22 @@ private fun WeeklyChallengeSection(challenge: WeeklyChallenge) {
 // ─── Articles & Tips ───────────────────────────────────────────────────────
 
 @Composable
-private fun ArticlesSection(
-    articles: List<ArticleTip>,
-    onSeeAll: () -> Unit
-) {
+private fun ArticlesSection(articles: List<ArticleTip>, onSeeAll: () -> Unit) {
     Column {
         SectionHeader(title = "Articles & Tips", trailingContent = {
             Text(
                 text = "See All ▷",
                 style = AppTypography.labelMedium,
-                color = AppColors.ElectricLime,
+                color = AppColors.TonalLavender,
                 modifier = Modifier.clickable(onClick = onSeeAll)
             )
         })
         Spacer(modifier = Modifier.height(AppSpacing.Medium))
-        Row(
-            modifier = Modifier
-                .horizontalScroll(rememberScrollState())
-                .padding(horizontal = AppSpacing.ScreenHorizontal),
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = AppSpacing.ScreenHorizontal),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            articles.forEach { article ->
+            items(articles, key = { "art_${it.id}" }) { article ->
                 ArticleCard(article = article)
             }
         }
@@ -469,24 +566,24 @@ private fun ArticlesSection(
 
 @Composable
 private fun ArticleCard(article: ArticleTip) {
-    val bgColors = listOf(Color(0xFF3E2723), Color(0xFF1A237E))
-
     Box(
         modifier = Modifier
             .width(140.dp)
             .height(160.dp)
             .clip(AppShape.Large)
-            .background(Brush.linearGradient(bgColors))
+            .background(
+                Brush.linearGradient(
+                    listOf(Color(0xFF3E2723), Color(0xFF1A237E))
+                )
+            )
             .padding(AppSpacing.Medium),
         contentAlignment = Alignment.BottomStart
     ) {
         Icon(
             imageVector = Icons.Default.Star,
             contentDescription = null,
-            tint = AppColors.ElectricLime,
-            modifier = Modifier
-                .size(18.dp)
-                .align(Alignment.TopEnd)
+            tint = AppColors.TonalLavender,
+            modifier = Modifier.size(18.dp).align(Alignment.TopEnd)
         )
         Text(
             text = article.title,

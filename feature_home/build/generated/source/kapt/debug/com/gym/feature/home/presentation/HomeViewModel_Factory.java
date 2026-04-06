@@ -1,10 +1,12 @@
 package com.gym.feature.home.presentation;
 
+import com.gym.feature.home.data.VideoRepository;
 import dagger.internal.DaggerGenerated;
 import dagger.internal.Factory;
 import dagger.internal.QualifierMetadata;
 import dagger.internal.ScopeMetadata;
 import javax.annotation.processing.Generated;
+import javax.inject.Provider;
 
 @ScopeMetadata
 @QualifierMetadata
@@ -21,20 +23,22 @@ import javax.annotation.processing.Generated;
     "cast"
 })
 public final class HomeViewModel_Factory implements Factory<HomeViewModel> {
+  private final Provider<VideoRepository> videoRepositoryProvider;
+
+  public HomeViewModel_Factory(Provider<VideoRepository> videoRepositoryProvider) {
+    this.videoRepositoryProvider = videoRepositoryProvider;
+  }
+
   @Override
   public HomeViewModel get() {
-    return newInstance();
+    return newInstance(videoRepositoryProvider.get());
   }
 
-  public static HomeViewModel_Factory create() {
-    return InstanceHolder.INSTANCE;
+  public static HomeViewModel_Factory create(Provider<VideoRepository> videoRepositoryProvider) {
+    return new HomeViewModel_Factory(videoRepositoryProvider);
   }
 
-  public static HomeViewModel newInstance() {
-    return new HomeViewModel();
-  }
-
-  private static final class InstanceHolder {
-    private static final HomeViewModel_Factory INSTANCE = new HomeViewModel_Factory();
+  public static HomeViewModel newInstance(VideoRepository videoRepository) {
+    return new HomeViewModel(videoRepository);
   }
 }
