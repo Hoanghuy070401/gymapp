@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "777269708097",
+    "firebase_url": "https://gym-app-d97c5-default-rtdb.asia-southeast1.firebasedatabase.app",
     "project_id": "gym-app-d97c5",
     "storage_bucket": "gym-app-d97c5.firebasestorage.app"
   },
@@ -12,7 +13,12 @@
           "package_name": "com.gym.app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "777269708097-te9jc1ulpfacqqugrs6br08c5cfna7r8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyADEl6lIOsJBPvPTy3OHpWYH5KEr-_b4O0"
@@ -20,7 +26,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "777269708097-te9jc1ulpfacqqugrs6br08c5cfna7r8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

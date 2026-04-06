@@ -17,6 +17,7 @@ import javax.inject.Singleton
 @Singleton
 class VideoRepository @Inject constructor() {
 
+    // URL được đọc tự động từ google-services.json (firebase_url field)
     private val database = FirebaseDatabase.getInstance()
 
     /**

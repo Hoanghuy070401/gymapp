@@ -1,6 +1,7 @@
 package com.gym.core.designsystem.component
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.PageSize
@@ -376,15 +377,21 @@ private fun PickerButtons(onConfirm: () -> Unit, onCancel: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = AppSpacing.ScreenHorizontal),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        // Cancel
+        // Cancel — outline style so it's visible against dark sheet bg
         Box(
             modifier = Modifier
                 .weight(1f)
                 .height(52.dp)
                 .clip(RoundedCornerShape(26.dp))
-                .background(AppColors.SurfaceContainerHigh)
+                .background(AppColors.SurfaceContainerHigh.copy(alpha = 0f))
+                .border(
+                    width = 1.5.dp,
+                    color = AppColors.OnSurfaceVariant.copy(alpha = 0.35f),
+                    shape = RoundedCornerShape(26.dp)
+                )
                 .clickable(onClick = onCancel),
             contentAlignment = Alignment.Center
         ) {
@@ -394,10 +401,10 @@ private fun PickerButtons(onConfirm: () -> Unit, onCancel: () -> Unit) {
                 color = AppColors.OnSurfaceVariant
             )
         }
-        // Confirm
+        // Confirm — lime filled, wider
         Box(
             modifier = Modifier
-                .weight(1f)
+                .weight(1.6f)
                 .height(52.dp)
                 .clip(RoundedCornerShape(26.dp))
                 .background(AppColors.ElectricLime)
