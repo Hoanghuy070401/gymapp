@@ -408,25 +408,25 @@ public final class DaggerGymApplication_HiltComponents_SingletonC {
 
     @IdentifierNameString
     private static final class LazyClassKeyProvider {
-      static String com_gym_feature_auth_presentation_AuthViewModel = "com.gym.feature.auth.presentation.AuthViewModel";
-
       static String com_gym_feature_workout_presentation_WorkoutViewModel = "com.gym.feature.workout.presentation.WorkoutViewModel";
 
-      static String com_gym_feature_home_presentation_HomeViewModel = "com.gym.feature.home.presentation.HomeViewModel";
+      static String com_gym_feature_auth_presentation_AuthViewModel = "com.gym.feature.auth.presentation.AuthViewModel";
 
       static String com_gym_feature_auth_presentation_setup_SetupViewModel = "com.gym.feature.auth.presentation.setup.SetupViewModel";
 
-      @KeepFieldType
-      AuthViewModel com_gym_feature_auth_presentation_AuthViewModel2;
+      static String com_gym_feature_home_presentation_HomeViewModel = "com.gym.feature.home.presentation.HomeViewModel";
 
       @KeepFieldType
       WorkoutViewModel com_gym_feature_workout_presentation_WorkoutViewModel2;
 
       @KeepFieldType
-      HomeViewModel com_gym_feature_home_presentation_HomeViewModel2;
+      AuthViewModel com_gym_feature_auth_presentation_AuthViewModel2;
 
       @KeepFieldType
       SetupViewModel com_gym_feature_auth_presentation_setup_SetupViewModel2;
+
+      @KeepFieldType
+      HomeViewModel com_gym_feature_home_presentation_HomeViewModel2;
     }
   }
 
@@ -488,25 +488,25 @@ public final class DaggerGymApplication_HiltComponents_SingletonC {
 
     @IdentifierNameString
     private static final class LazyClassKeyProvider {
-      static String com_gym_feature_auth_presentation_AuthViewModel = "com.gym.feature.auth.presentation.AuthViewModel";
-
-      static String com_gym_feature_workout_presentation_WorkoutViewModel = "com.gym.feature.workout.presentation.WorkoutViewModel";
+      static String com_gym_feature_home_presentation_HomeViewModel = "com.gym.feature.home.presentation.HomeViewModel";
 
       static String com_gym_feature_auth_presentation_setup_SetupViewModel = "com.gym.feature.auth.presentation.setup.SetupViewModel";
 
-      static String com_gym_feature_home_presentation_HomeViewModel = "com.gym.feature.home.presentation.HomeViewModel";
+      static String com_gym_feature_workout_presentation_WorkoutViewModel = "com.gym.feature.workout.presentation.WorkoutViewModel";
+
+      static String com_gym_feature_auth_presentation_AuthViewModel = "com.gym.feature.auth.presentation.AuthViewModel";
 
       @KeepFieldType
-      AuthViewModel com_gym_feature_auth_presentation_AuthViewModel2;
-
-      @KeepFieldType
-      WorkoutViewModel com_gym_feature_workout_presentation_WorkoutViewModel2;
+      HomeViewModel com_gym_feature_home_presentation_HomeViewModel2;
 
       @KeepFieldType
       SetupViewModel com_gym_feature_auth_presentation_setup_SetupViewModel2;
 
       @KeepFieldType
-      HomeViewModel com_gym_feature_home_presentation_HomeViewModel2;
+      WorkoutViewModel com_gym_feature_workout_presentation_WorkoutViewModel2;
+
+      @KeepFieldType
+      AuthViewModel com_gym_feature_auth_presentation_AuthViewModel2;
     }
 
     private static final class SwitchingProvider<T> implements Provider<T> {

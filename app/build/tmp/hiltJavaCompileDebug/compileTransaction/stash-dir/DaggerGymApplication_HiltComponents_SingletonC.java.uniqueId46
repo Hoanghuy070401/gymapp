@@ -1,0 +1,712 @@
+package com.gym.app;
+
+import android.app.Activity;
+import android.app.Service;
+import android.view.View;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.SavedStateHandle;
+import androidx.lifecycle.ViewModel;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.gym.data.di.DatabaseModule_ProvideGymDatabaseFactory;
+import com.gym.data.di.DatabaseModule_ProvideWorkoutDaoFactory;
+import com.gym.data.local.GymDatabase;
+import com.gym.data.local.WorkoutDao;
+import com.gym.data.repository.WorkoutRepositoryImpl;
+import com.gym.domain.repository.WorkoutRepository;
+import com.gym.domain.usecase.GetWorkoutsUseCase;
+import com.gym.domain.usecase.SaveWorkoutUseCase;
+import com.gym.domain.usecase.SyncWorkoutsUseCase;
+import com.gym.feature.auth.data.AuthRepository;
+import com.gym.feature.auth.data.ProfileImageStorage;
+import com.gym.feature.auth.di.AuthModule_ProvideAuthRepositoryFactory;
+import com.gym.feature.auth.di.AuthModule_ProvideProfileImageStorageFactory;
+import com.gym.feature.auth.presentation.AuthViewModel;
+import com.gym.feature.auth.presentation.AuthViewModel_HiltModules;
+import com.gym.feature.auth.presentation.setup.SetupViewModel;
+import com.gym.feature.auth.presentation.setup.SetupViewModel_HiltModules;
+import com.gym.feature.home.data.VideoRepository;
+import com.gym.feature.home.presentation.HomeViewModel;
+import com.gym.feature.home.presentation.HomeViewModel_HiltModules;
+import com.gym.feature.workout.presentation.WorkoutViewModel;
+import com.gym.feature.workout.presentation.WorkoutViewModel_HiltModules;
+import dagger.hilt.android.ActivityRetainedLifecycle;
+import dagger.hilt.android.ViewModelLifecycle;
+import dagger.hilt.android.internal.builders.ActivityComponentBuilder;
+import dagger.hilt.android.internal.builders.ActivityRetainedComponentBuilder;
+import dagger.hilt.android.internal.builders.FragmentComponentBuilder;
+import dagger.hilt.android.internal.builders.ServiceComponentBuilder;
+import dagger.hilt.android.internal.builders.ViewComponentBuilder;
+import dagger.hilt.android.internal.builders.ViewModelComponentBuilder;
+import dagger.hilt.android.internal.builders.ViewWithFragmentComponentBuilder;
+import dagger.hilt.android.internal.lifecycle.DefaultViewModelFactories;
+import dagger.hilt.android.internal.lifecycle.DefaultViewModelFactories_InternalFactoryFactory_Factory;
+import dagger.hilt.android.internal.managers.ActivityRetainedComponentManager_LifecycleModule_ProvideActivityRetainedLifecycleFactory;
+import dagger.hilt.android.internal.managers.SavedStateHandleHolder;
+import dagger.hilt.android.internal.modules.ApplicationContextModule;
+import dagger.hilt.android.internal.modules.ApplicationContextModule_ProvideContextFactory;
+import dagger.internal.DaggerGenerated;
+import dagger.internal.DoubleCheck;
+import dagger.internal.IdentifierNameString;
+import dagger.internal.KeepFieldType;
+import dagger.internal.LazyClassKeyMap;
+import dagger.internal.Preconditions;
+import dagger.internal.Provider;
+import java.util.Map;
+import java.util.Set;
+import javax.annotation.processing.Generated;
+
+@DaggerGenerated
+@Generated(
+    value = "dagger.internal.codegen.ComponentProcessor",
+    comments = "https://dagger.dev"
+)
+@SuppressWarnings({
+    "unchecked",
+    "rawtypes",
+    "KotlinInternal",
+    "KotlinInternalInJava",
+    "cast"
+})
+public final class DaggerGymApplication_HiltComponents_SingletonC {
+  private DaggerGymApplication_HiltComponents_SingletonC() {
+  }
+
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  public static final class Builder {
+    private ApplicationContextModule applicationContextModule;
+
+    private Builder() {
+    }
+
+    public Builder applicationContextModule(ApplicationContextModule applicationContextModule) {
+      this.applicationContextModule = Preconditions.checkNotNull(applicationContextModule);
+      return this;
+    }
+
+    public GymApplication_HiltComponents.SingletonC build() {
+      Preconditions.checkBuilderRequirement(applicationContextModule, ApplicationContextModule.class);
+      return new SingletonCImpl(applicationContextModule);
+    }
+  }
+
+  private static final class ActivityRetainedCBuilder implements GymApplication_HiltComponents.ActivityRetainedC.Builder {
+    private final SingletonCImpl singletonCImpl;
+
+    private SavedStateHandleHolder savedStateHandleHolder;
+
+    private ActivityRetainedCBuilder(SingletonCImpl singletonCImpl) {
+      this.singletonCImpl = singletonCImpl;
+    }
+
+    @Override
+    public ActivityRetainedCBuilder savedStateHandleHolder(
+        SavedStateHandleHolder savedStateHandleHolder) {
+      this.savedStateHandleHolder = Preconditions.checkNotNull(savedStateHandleHolder);
+      return this;
+    }
+
+    @Override
+    public GymApplication_HiltComponents.ActivityRetainedC build() {
+      Preconditions.checkBuilderRequirement(savedStateHandleHolder, SavedStateHandleHolder.class);
+      return new ActivityRetainedCImpl(singletonCImpl, savedStateHandleHolder);
+    }
+  }
+
+  private static final class ActivityCBuilder implements GymApplication_HiltComponents.ActivityC.Builder {
+    private final SingletonCImpl singletonCImpl;
+
+    private final ActivityRetainedCImpl activityRetainedCImpl;
+
+    private Activity activity;
+
+    private ActivityCBuilder(SingletonCImpl singletonCImpl,
+        ActivityRetainedCImpl activityRetainedCImpl) {
+      this.singletonCImpl = singletonCImpl;
+      this.activityRetainedCImpl = activityRetainedCImpl;
+    }
+
+    @Override
+    public ActivityCBuilder activity(Activity activity) {
+      this.activity = Preconditions.checkNotNull(activity);
+      return this;
+    }
+
+    @Override
+    public GymApplication_HiltComponents.ActivityC build() {
+      Preconditions.checkBuilderRequirement(activity, Activity.class);
+      return new ActivityCImpl(singletonCImpl, activityRetainedCImpl, activity);
+    }
+  }
+
+  private static final class FragmentCBuilder implements GymApplication_HiltComponents.FragmentC.Builder {
+    private final SingletonCImpl singletonCImpl;
+
+    private final ActivityRetainedCImpl activityRetainedCImpl;
+
+    private final ActivityCImpl activityCImpl;
+
+    private Fragment fragment;
+
+    private FragmentCBuilder(SingletonCImpl singletonCImpl,
+        ActivityRetainedCImpl activityRetainedCImpl, ActivityCImpl activityCImpl) {
+      this.singletonCImpl = singletonCImpl;
+      this.activityRetainedCImpl = activityRetainedCImpl;
+      this.activityCImpl = activityCImpl;
+    }
+
+    @Override
+    public FragmentCBuilder fragment(Fragment fragment) {
+      this.fragment = Preconditions.checkNotNull(fragment);
+      return this;
+    }
+
+    @Override
+    public GymApplication_HiltComponents.FragmentC build() {
+      Preconditions.checkBuilderRequirement(fragment, Fragment.class);
+      return new FragmentCImpl(singletonCImpl, activityRetainedCImpl, activityCImpl, fragment);
+    }
+  }
+
+  private static final class ViewWithFragmentCBuilder implements GymApplication_HiltComponents.ViewWithFragmentC.Builder {
+    private final SingletonCImpl singletonCImpl;
+
+    private final ActivityRetainedCImpl activityRetainedCImpl;
+
+    private final ActivityCImpl activityCImpl;
+
+    private final FragmentCImpl fragmentCImpl;
+
+    private View view;
+
+    private ViewWithFragmentCBuilder(SingletonCImpl singletonCImpl,
+        ActivityRetainedCImpl activityRetainedCImpl, ActivityCImpl activityCImpl,
+        FragmentCImpl fragmentCImpl) {
+      this.singletonCImpl = singletonCImpl;
+      this.activityRetainedCImpl = activityRetainedCImpl;
+      this.activityCImpl = activityCImpl;
+      this.fragmentCImpl = fragmentCImpl;
+    }
+
+    @Override
+    public ViewWithFragmentCBuilder view(View view) {
+      this.view = Preconditions.checkNotNull(view);
+      return this;
+    }
+
+    @Override
+    public GymApplication_HiltComponents.ViewWithFragmentC build() {
+      Preconditions.checkBuilderRequirement(view, View.class);
+      return new ViewWithFragmentCImpl(singletonCImpl, activityRetainedCImpl, activityCImpl, fragmentCImpl, view);
+    }
+  }
+
+  private static final class ViewCBuilder implements GymApplication_HiltComponents.ViewC.Builder {
+    private final SingletonCImpl singletonCImpl;
+
+    private final ActivityRetainedCImpl activityRetainedCImpl;
+
+    private final ActivityCImpl activityCImpl;
+
+    private View view;
+
+    private ViewCBuilder(SingletonCImpl singletonCImpl, ActivityRetainedCImpl activityRetainedCImpl,
+        ActivityCImpl activityCImpl) {
+      this.singletonCImpl = singletonCImpl;
+      this.activityRetainedCImpl = activityRetainedCImpl;
+      this.activityCImpl = activityCImpl;
+    }
+
+    @Override
+    public ViewCBuilder view(View view) {
+      this.view = Preconditions.checkNotNull(view);
+      return this;
+    }
+
+    @Override
+    public GymApplication_HiltComponents.ViewC build() {
+      Preconditions.checkBuilderRequirement(view, View.class);
+      return new ViewCImpl(singletonCImpl, activityRetainedCImpl, activityCImpl, view);
+    }
+  }
+
+  private static final class ViewModelCBuilder implements GymApplication_HiltComponents.ViewModelC.Builder {
+    private final SingletonCImpl singletonCImpl;
+
+    private final ActivityRetainedCImpl activityRetainedCImpl;
+
+    private SavedStateHandle savedStateHandle;
+
+    private ViewModelLifecycle viewModelLifecycle;
+
+    private ViewModelCBuilder(SingletonCImpl singletonCImpl,
+        ActivityRetainedCImpl activityRetainedCImpl) {
+      this.singletonCImpl = singletonCImpl;
+      this.activityRetainedCImpl = activityRetainedCImpl;
+    }
+
+    @Override
+    public ViewModelCBuilder savedStateHandle(SavedStateHandle handle) {
+      this.savedStateHandle = Preconditions.checkNotNull(handle);
+      return this;
+    }
+
+    @Override
+    public ViewModelCBuilder viewModelLifecycle(ViewModelLifecycle viewModelLifecycle) {
+      this.viewModelLifecycle = Preconditions.checkNotNull(viewModelLifecycle);
+      return this;
+    }
+
+    @Override
+    public GymApplication_HiltComponents.ViewModelC build() {
+      Preconditions.checkBuilderRequirement(savedStateHandle, SavedStateHandle.class);
+      Preconditions.checkBuilderRequirement(viewModelLifecycle, ViewModelLifecycle.class);
+      return new ViewModelCImpl(singletonCImpl, activityRetainedCImpl, savedStateHandle, viewModelLifecycle);
+    }
+  }
+
+  private static final class ServiceCBuilder implements GymApplication_HiltComponents.ServiceC.Builder {
+    private final SingletonCImpl singletonCImpl;
+
+    private Service service;
+
+    private ServiceCBuilder(SingletonCImpl singletonCImpl) {
+      this.singletonCImpl = singletonCImpl;
+    }
+
+    @Override
+    public ServiceCBuilder service(Service service) {
+      this.service = Preconditions.checkNotNull(service);
+      return this;
+    }
+
+    @Override
+    public GymApplication_HiltComponents.ServiceC build() {
+      Preconditions.checkBuilderRequirement(service, Service.class);
+      return new ServiceCImpl(singletonCImpl, service);
+    }
+  }
+
+  private static final class ViewWithFragmentCImpl extends GymApplication_HiltComponents.ViewWithFragmentC {
+    private final SingletonCImpl singletonCImpl;
+
+    private final ActivityRetainedCImpl activityRetainedCImpl;
+
+    private final ActivityCImpl activityCImpl;
+
+    private final FragmentCImpl fragmentCImpl;
+
+    private final ViewWithFragmentCImpl viewWithFragmentCImpl = this;
+
+    private ViewWithFragmentCImpl(SingletonCImpl singletonCImpl,
+        ActivityRetainedCImpl activityRetainedCImpl, ActivityCImpl activityCImpl,
+        FragmentCImpl fragmentCImpl, View viewParam) {
+      this.singletonCImpl = singletonCImpl;
+      this.activityRetainedCImpl = activityRetainedCImpl;
+      this.activityCImpl = activityCImpl;
+      this.fragmentCImpl = fragmentCImpl;
+
+
+    }
+  }
+
+  private static final class FragmentCImpl extends GymApplication_HiltComponents.FragmentC {
+    private final SingletonCImpl singletonCImpl;
+
+    private final ActivityRetainedCImpl activityRetainedCImpl;
+
+    private final ActivityCImpl activityCImpl;
+
+    private final FragmentCImpl fragmentCImpl = this;
+
+    private FragmentCImpl(SingletonCImpl singletonCImpl,
+        ActivityRetainedCImpl activityRetainedCImpl, ActivityCImpl activityCImpl,
+        Fragment fragmentParam) {
+      this.singletonCImpl = singletonCImpl;
+      this.activityRetainedCImpl = activityRetainedCImpl;
+      this.activityCImpl = activityCImpl;
+
+
+    }
+
+    @Override
+    public DefaultViewModelFactories.InternalFactoryFactory getHiltInternalFactoryFactory() {
+      return activityCImpl.getHiltInternalFactoryFactory();
+    }
+
+    @Override
+    public ViewWithFragmentComponentBuilder viewWithFragmentComponentBuilder() {
+      return new ViewWithFragmentCBuilder(singletonCImpl, activityRetainedCImpl, activityCImpl, fragmentCImpl);
+    }
+  }
+
+  private static final class ViewCImpl extends GymApplication_HiltComponents.ViewC {
+    private final SingletonCImpl singletonCImpl;
+
+    private final ActivityRetainedCImpl activityRetainedCImpl;
+
+    private final ActivityCImpl activityCImpl;
+
+    private final ViewCImpl viewCImpl = this;
+
+    private ViewCImpl(SingletonCImpl singletonCImpl, ActivityRetainedCImpl activityRetainedCImpl,
+        ActivityCImpl activityCImpl, View viewParam) {
+      this.singletonCImpl = singletonCImpl;
+      this.activityRetainedCImpl = activityRetainedCImpl;
+      this.activityCImpl = activityCImpl;
+
+
+    }
+  }
+
+  private static final class ActivityCImpl extends GymApplication_HiltComponents.ActivityC {
+    private final SingletonCImpl singletonCImpl;
+
+    private final ActivityRetainedCImpl activityRetainedCImpl;
+
+    private final ActivityCImpl activityCImpl = this;
+
+    private ActivityCImpl(SingletonCImpl singletonCImpl,
+        ActivityRetainedCImpl activityRetainedCImpl, Activity activityParam) {
+      this.singletonCImpl = singletonCImpl;
+      this.activityRetainedCImpl = activityRetainedCImpl;
+
+
+    }
+
+    @Override
+    public void injectMainActivity(MainActivity arg0) {
+    }
+
+    @Override
+    public DefaultViewModelFactories.InternalFactoryFactory getHiltInternalFactoryFactory() {
+      return DefaultViewModelFactories_InternalFactoryFactory_Factory.newInstance(getViewModelKeys(), new ViewModelCBuilder(singletonCImpl, activityRetainedCImpl));
+    }
+
+    @Override
+    public Map<Class<?>, Boolean> getViewModelKeys() {
+      return LazyClassKeyMap.<Boolean>of(ImmutableMap.<String, Boolean>of(LazyClassKeyProvider.com_gym_feature_auth_presentation_AuthViewModel, AuthViewModel_HiltModules.KeyModule.provide(), LazyClassKeyProvider.com_gym_feature_home_presentation_HomeViewModel, HomeViewModel_HiltModules.KeyModule.provide(), LazyClassKeyProvider.com_gym_feature_auth_presentation_setup_SetupViewModel, SetupViewModel_HiltModules.KeyModule.provide(), LazyClassKeyProvider.com_gym_feature_workout_presentation_WorkoutViewModel, WorkoutViewModel_HiltModules.KeyModule.provide()));
+    }
+
+    @Override
+    public ViewModelComponentBuilder getViewModelComponentBuilder() {
+      return new ViewModelCBuilder(singletonCImpl, activityRetainedCImpl);
+    }
+
+    @Override
+    public FragmentComponentBuilder fragmentComponentBuilder() {
+      return new FragmentCBuilder(singletonCImpl, activityRetainedCImpl, activityCImpl);
+    }
+
+    @Override
+    public ViewComponentBuilder viewComponentBuilder() {
+      return new ViewCBuilder(singletonCImpl, activityRetainedCImpl, activityCImpl);
+    }
+
+    @IdentifierNameString
+    private static final class LazyClassKeyProvider {
+      static String com_gym_feature_workout_presentation_WorkoutViewModel = "com.gym.feature.workout.presentation.WorkoutViewModel";
+
+      static String com_gym_feature_auth_presentation_AuthViewModel = "com.gym.feature.auth.presentation.AuthViewModel";
+
+      static String com_gym_feature_home_presentation_HomeViewModel = "com.gym.feature.home.presentation.HomeViewModel";
+
+      static String com_gym_feature_auth_presentation_setup_SetupViewModel = "com.gym.feature.auth.presentation.setup.SetupViewModel";
+
+      @KeepFieldType
+      WorkoutViewModel com_gym_feature_workout_presentation_WorkoutViewModel2;
+
+      @KeepFieldType
+      AuthViewModel com_gym_feature_auth_presentation_AuthViewModel2;
+
+      @KeepFieldType
+      HomeViewModel com_gym_feature_home_presentation_HomeViewModel2;
+
+      @KeepFieldType
+      SetupViewModel com_gym_feature_auth_presentation_setup_SetupViewModel2;
+    }
+  }
+
+  private static final class ViewModelCImpl extends GymApplication_HiltComponents.ViewModelC {
+    private final SingletonCImpl singletonCImpl;
+
+    private final ActivityRetainedCImpl activityRetainedCImpl;
+
+    private final ViewModelCImpl viewModelCImpl = this;
+
+    private Provider<AuthViewModel> authViewModelProvider;
+
+    private Provider<HomeViewModel> homeViewModelProvider;
+
+    private Provider<SetupViewModel> setupViewModelProvider;
+
+    private Provider<WorkoutViewModel> workoutViewModelProvider;
+
+    private ViewModelCImpl(SingletonCImpl singletonCImpl,
+        ActivityRetainedCImpl activityRetainedCImpl, SavedStateHandle savedStateHandleParam,
+        ViewModelLifecycle viewModelLifecycleParam) {
+      this.singletonCImpl = singletonCImpl;
+      this.activityRetainedCImpl = activityRetainedCImpl;
+
+      initialize(savedStateHandleParam, viewModelLifecycleParam);
+
+    }
+
+    private GetWorkoutsUseCase getWorkoutsUseCase() {
+      return new GetWorkoutsUseCase(singletonCImpl.bindWorkoutRepositoryProvider.get());
+    }
+
+    private SaveWorkoutUseCase saveWorkoutUseCase() {
+      return new SaveWorkoutUseCase(singletonCImpl.bindWorkoutRepositoryProvider.get());
+    }
+
+    private SyncWorkoutsUseCase syncWorkoutsUseCase() {
+      return new SyncWorkoutsUseCase(singletonCImpl.bindWorkoutRepositoryProvider.get());
+    }
+
+    @SuppressWarnings("unchecked")
+    private void initialize(final SavedStateHandle savedStateHandleParam,
+        final ViewModelLifecycle viewModelLifecycleParam) {
+      this.authViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 0);
+      this.homeViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 1);
+      this.setupViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 2);
+      this.workoutViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 3);
+    }
+
+    @Override
+    public Map<Class<?>, javax.inject.Provider<ViewModel>> getHiltViewModelMap() {
+      return LazyClassKeyMap.<javax.inject.Provider<ViewModel>>of(ImmutableMap.<String, javax.inject.Provider<ViewModel>>of(LazyClassKeyProvider.com_gym_feature_auth_presentation_AuthViewModel, ((Provider) authViewModelProvider), LazyClassKeyProvider.com_gym_feature_home_presentation_HomeViewModel, ((Provider) homeViewModelProvider), LazyClassKeyProvider.com_gym_feature_auth_presentation_setup_SetupViewModel, ((Provider) setupViewModelProvider), LazyClassKeyProvider.com_gym_feature_workout_presentation_WorkoutViewModel, ((Provider) workoutViewModelProvider)));
+    }
+
+    @Override
+    public Map<Class<?>, Object> getHiltViewModelAssistedMap() {
+      return ImmutableMap.<Class<?>, Object>of();
+    }
+
+    @IdentifierNameString
+    private static final class LazyClassKeyProvider {
+      static String com_gym_feature_auth_presentation_setup_SetupViewModel = "com.gym.feature.auth.presentation.setup.SetupViewModel";
+
+      static String com_gym_feature_home_presentation_HomeViewModel = "com.gym.feature.home.presentation.HomeViewModel";
+
+      static String com_gym_feature_workout_presentation_WorkoutViewModel = "com.gym.feature.workout.presentation.WorkoutViewModel";
+
+      static String com_gym_feature_auth_presentation_AuthViewModel = "com.gym.feature.auth.presentation.AuthViewModel";
+
+      @KeepFieldType
+      SetupViewModel com_gym_feature_auth_presentation_setup_SetupViewModel2;
+
+      @KeepFieldType
+      HomeViewModel com_gym_feature_home_presentation_HomeViewModel2;
+
+      @KeepFieldType
+      WorkoutViewModel com_gym_feature_workout_presentation_WorkoutViewModel2;
+
+      @KeepFieldType
+      AuthViewModel com_gym_feature_auth_presentation_AuthViewModel2;
+    }
+
+    private static final class SwitchingProvider<T> implements Provider<T> {
+      private final SingletonCImpl singletonCImpl;
+
+      private final ActivityRetainedCImpl activityRetainedCImpl;
+
+      private final ViewModelCImpl viewModelCImpl;
+
+      private final int id;
+
+      SwitchingProvider(SingletonCImpl singletonCImpl, ActivityRetainedCImpl activityRetainedCImpl,
+          ViewModelCImpl viewModelCImpl, int id) {
+        this.singletonCImpl = singletonCImpl;
+        this.activityRetainedCImpl = activityRetainedCImpl;
+        this.viewModelCImpl = viewModelCImpl;
+        this.id = id;
+      }
+
+      @SuppressWarnings("unchecked")
+      @Override
+      public T get() {
+        switch (id) {
+          case 0: // com.gym.feature.auth.presentation.AuthViewModel 
+          return (T) new AuthViewModel(singletonCImpl.provideAuthRepositoryProvider.get());
+
+          case 1: // com.gym.feature.home.presentation.HomeViewModel 
+          return (T) new HomeViewModel(singletonCImpl.videoRepositoryProvider.get());
+
+          case 2: // com.gym.feature.auth.presentation.setup.SetupViewModel 
+          return (T) new SetupViewModel(singletonCImpl.provideAuthRepositoryProvider.get(), singletonCImpl.provideProfileImageStorageProvider.get());
+
+          case 3: // com.gym.feature.workout.presentation.WorkoutViewModel 
+          return (T) new WorkoutViewModel(viewModelCImpl.getWorkoutsUseCase(), viewModelCImpl.saveWorkoutUseCase(), viewModelCImpl.syncWorkoutsUseCase());
+
+          default: throw new AssertionError(id);
+        }
+      }
+    }
+  }
+
+  private static final class ActivityRetainedCImpl extends GymApplication_HiltComponents.ActivityRetainedC {
+    private final SingletonCImpl singletonCImpl;
+
+    private final ActivityRetainedCImpl activityRetainedCImpl = this;
+
+    private Provider<ActivityRetainedLifecycle> provideActivityRetainedLifecycleProvider;
+
+    private ActivityRetainedCImpl(SingletonCImpl singletonCImpl,
+        SavedStateHandleHolder savedStateHandleHolderParam) {
+      this.singletonCImpl = singletonCImpl;
+
+      initialize(savedStateHandleHolderParam);
+
+    }
+
+    @SuppressWarnings("unchecked")
+    private void initialize(final SavedStateHandleHolder savedStateHandleHolderParam) {
+      this.provideActivityRetainedLifecycleProvider = DoubleCheck.provider(new SwitchingProvider<ActivityRetainedLifecycle>(singletonCImpl, activityRetainedCImpl, 0));
+    }
+
+    @Override
+    public ActivityComponentBuilder activityComponentBuilder() {
+      return new ActivityCBuilder(singletonCImpl, activityRetainedCImpl);
+    }
+
+    @Override
+    public ActivityRetainedLifecycle getActivityRetainedLifecycle() {
+      return provideActivityRetainedLifecycleProvider.get();
+    }
+
+    private static final class SwitchingProvider<T> implements Provider<T> {
+      private final SingletonCImpl singletonCImpl;
+
+      private final ActivityRetainedCImpl activityRetainedCImpl;
+
+      private final int id;
+
+      SwitchingProvider(SingletonCImpl singletonCImpl, ActivityRetainedCImpl activityRetainedCImpl,
+          int id) {
+        this.singletonCImpl = singletonCImpl;
+        this.activityRetainedCImpl = activityRetainedCImpl;
+        this.id = id;
+      }
+
+      @SuppressWarnings("unchecked")
+      @Override
+      public T get() {
+        switch (id) {
+          case 0: // dagger.hilt.android.ActivityRetainedLifecycle 
+          return (T) ActivityRetainedComponentManager_LifecycleModule_ProvideActivityRetainedLifecycleFactory.provideActivityRetainedLifecycle();
+
+          default: throw new AssertionError(id);
+        }
+      }
+    }
+  }
+
+  private static final class ServiceCImpl extends GymApplication_HiltComponents.ServiceC {
+    private final SingletonCImpl singletonCImpl;
+
+    private final ServiceCImpl serviceCImpl = this;
+
+    private ServiceCImpl(SingletonCImpl singletonCImpl, Service serviceParam) {
+      this.singletonCImpl = singletonCImpl;
+
+
+    }
+  }
+
+  private static final class SingletonCImpl extends GymApplication_HiltComponents.SingletonC {
+    private final ApplicationContextModule applicationContextModule;
+
+    private final SingletonCImpl singletonCImpl = this;
+
+    private Provider<AuthRepository> provideAuthRepositoryProvider;
+
+    private Provider<VideoRepository> videoRepositoryProvider;
+
+    private Provider<ProfileImageStorage> provideProfileImageStorageProvider;
+
+    private Provider<GymDatabase> provideGymDatabaseProvider;
+
+    private Provider<WorkoutDao> provideWorkoutDaoProvider;
+
+    private Provider<WorkoutRepositoryImpl> workoutRepositoryImplProvider;
+
+    private Provider<WorkoutRepository> bindWorkoutRepositoryProvider;
+
+    private SingletonCImpl(ApplicationContextModule applicationContextModuleParam) {
+      this.applicationContextModule = applicationContextModuleParam;
+      initialize(applicationContextModuleParam);
+
+    }
+
+    @SuppressWarnings("unchecked")
+    private void initialize(final ApplicationContextModule applicationContextModuleParam) {
+      this.provideAuthRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<AuthRepository>(singletonCImpl, 0));
+      this.videoRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<VideoRepository>(singletonCImpl, 1));
+      this.provideProfileImageStorageProvider = DoubleCheck.provider(new SwitchingProvider<ProfileImageStorage>(singletonCImpl, 2));
+      this.provideGymDatabaseProvider = DoubleCheck.provider(new SwitchingProvider<GymDatabase>(singletonCImpl, 5));
+      this.provideWorkoutDaoProvider = DoubleCheck.provider(new SwitchingProvider<WorkoutDao>(singletonCImpl, 4));
+      this.workoutRepositoryImplProvider = new SwitchingProvider<>(singletonCImpl, 3);
+      this.bindWorkoutRepositoryProvider = DoubleCheck.provider((Provider) workoutRepositoryImplProvider);
+    }
+
+    @Override
+    public void injectGymApplication(GymApplication gymApplication) {
+    }
+
+    @Override
+    public Set<Boolean> getDisableFragmentGetContextFix() {
+      return ImmutableSet.<Boolean>of();
+    }
+
+    @Override
+    public ActivityRetainedComponentBuilder retainedComponentBuilder() {
+      return new ActivityRetainedCBuilder(singletonCImpl);
+    }
+
+    @Override
+    public ServiceComponentBuilder serviceComponentBuilder() {
+      return new ServiceCBuilder(singletonCImpl);
+    }
+
+    private static final class SwitchingProvider<T> implements Provider<T> {
+      private final SingletonCImpl singletonCImpl;
+
+      private final int id;
+
+      SwitchingProvider(SingletonCImpl singletonCImpl, int id) {
+        this.singletonCImpl = singletonCImpl;
+        this.id = id;
+      }
+
+      @SuppressWarnings("unchecked")
+      @Override
+      public T get() {
+        switch (id) {
+          case 0: // com.gym.feature.auth.data.AuthRepository 
+          return (T) AuthModule_ProvideAuthRepositoryFactory.provideAuthRepository();
+
+          case 1: // com.gym.feature.home.data.VideoRepository 
+          return (T) new VideoRepository();
+
+          case 2: // com.gym.feature.auth.data.ProfileImageStorage 
+          return (T) AuthModule_ProvideProfileImageStorageFactory.provideProfileImageStorage(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
+
+          case 3: // com.gym.data.repository.WorkoutRepositoryImpl 
+          return (T) new WorkoutRepositoryImpl(singletonCImpl.provideWorkoutDaoProvider.get());
+
+          case 4: // com.gym.data.local.WorkoutDao 
+          return (T) DatabaseModule_ProvideWorkoutDaoFactory.provideWorkoutDao(singletonCImpl.provideGymDatabaseProvider.get());
+
+          case 5: // com.gym.data.local.GymDatabase 
+          return (T) DatabaseModule_ProvideGymDatabaseFactory.provideGymDatabase(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
+
+          default: throw new AssertionError(id);
+        }
+      }
+    }
+  }
+}

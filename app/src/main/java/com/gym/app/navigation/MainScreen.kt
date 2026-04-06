@@ -3,12 +3,17 @@ package com.gym.app.navigation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -16,18 +21,15 @@ import androidx.navigation.compose.rememberNavController
 import com.gym.core.designsystem.theme.AppColors
 import com.gym.feature.home.presentation.HomeScreen
 import com.gym.feature.home.presentation.HomeViewModel
-import com.gym.feature.home.data.WorkoutVideo
+import com.gym.feature.home.presentation.video.AddVideoScreen
 import com.gym.feature.home.presentation.video.VideoDetailScreen
 import com.gym.feature.workout.presentation.WorkoutScreen
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import androidx.compose.runtime.remember
 
 /**
- * Main app shell — wraps Home + Workout + future tabs with Bottom Navigation.
- * Separate from auth navigation to keep auth flow clean.
- *
- * Navigation within main is managed by an internal [NavHostController].
+ * Main app shell — manages bottom navigation + inner NavHost.
+ * FAB on Home tab navigates to AddVideoScreen (dedicated screen, Approach A).
  */
 @Composable
 fun MainScreen(
@@ -36,19 +38,21 @@ fun MainScreen(
     val innerNav = rememberNavController()
     val backStack by innerNav.currentBackStackEntryAsState()
     val currentRoute = backStack?.destination?.route ?: Screen.Home.route
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    // Only show bottom nav on top-level destinations
-    val showBottomNav = currentRoute in setOf(
+    val isTopLevel = currentRoute in setOf(
         Screen.Home.route,
         Screen.Workout.route,
         "favorites",
         "support"
     )
+    val isHomeTab = currentRoute == Screen.Home.route
 
     Scaffold(
         containerColor = AppColors.Surface,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
-            if (showBottomNav) {
+            if (isTopLevel) {
                 BottomNavBar(
                     currentRoute = currentRoute,
                     onNavigateToHome = {
@@ -68,13 +72,29 @@ fun MainScreen(
                     onNavigateToSupport = { /* TODO: Support */ }
                 )
             }
+        },
+        floatingActionButton = {
+            // FAB only visible on Home tab — navigates to dedicated AddVideoScreen
+            if (isHomeTab) {
+                FloatingActionButton(
+                    onClick = { innerNav.navigate(Screen.AddVideo.route) },
+                    shape = CircleShape,
+                    containerColor = AppColors.TonalLavender,
+                    contentColor = AppColors.Surface
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Thêm video")
+                }
+            }
         }
     ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .padding(innerPadding)) {
             NavHost(
                 navController = innerNav,
                 startDestination = Screen.Home.route
             ) {
+                // ── Home ─────────────────────────────────────────────────────
                 composable(Screen.Home.route) {
                     val homeViewModel: HomeViewModel = hiltViewModel()
                     HomeScreen(
@@ -82,9 +102,7 @@ fun MainScreen(
                         onNavigateToSearch = { /* TODO */ },
                         onNavigateToNotifications = { /* TODO */ },
                         onNavigateToProfile = { /* TODO */ },
-                        onNavigateToWorkout = {
-                            innerNav.navigate(Screen.Workout.route)
-                        },
+                        onNavigateToWorkout = { innerNav.navigate(Screen.Workout.route) },
                         onNavigateToProgress = { /* TODO */ },
                         onNavigateToNutrition = { /* TODO */ },
                         onNavigateToCommunity = { /* TODO */ },
@@ -94,11 +112,19 @@ fun MainScreen(
                     )
                 }
 
+                // ── Workout ──────────────────────────────────────────────────
                 composable(Screen.Workout.route) {
                     WorkoutScreen(viewModel = hiltViewModel())
                 }
 
-                // Video Detail
+                // ── Add Video (admin seed screen) ─────────────────────────────
+                composable(Screen.AddVideo.route) {
+                    AddVideoScreen(
+                        onBack = { innerNav.popBackStack() }
+                    )
+                }
+
+                // ── Video Detail ─────────────────────────────────────────────
                 composable(
                     route = Screen.VideoDetail.route,
                     arguments = listOf(
@@ -109,7 +135,6 @@ fun MainScreen(
                         ?.getString(Screen.VideoDetail.ARG_VIDEO_ID)
                         ?: return@composable
 
-                    // Retrieve video from HomeViewModel scoped to home back-stack entry
                     val homeEntry = remember(backStackEntry) {
                         innerNav.getBackStackEntry(Screen.Home.route)
                     }

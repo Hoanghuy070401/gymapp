@@ -68,6 +68,8 @@ class HomeViewModel @Inject constructor(
     private val _state = MutableStateFlow(HomeState())
     val state: StateFlow<HomeState> = _state.asStateFlow()
 
+
+
     init {
         loadHomeData()
     }
@@ -76,13 +78,21 @@ class HomeViewModel @Inject constructor(
         val uid = auth.currentUser?.uid
         GymLogger.d(TAG, "loadHomeData uid=$uid")
 
-        if (uid == null) {
-            GymLogger.w(TAG, "loadHomeData: no current user — showing defaults")
-            // Không có account → vẫn show content với seed videos
-            viewModelScope.launch {
-                val videos = videoRepository.getWorkoutVideos()
-                _state.update { it.copy(isLoading = false, workoutVideos = videos, recommendedRoutines = defaultRoutines(), recentArticles = defaultArticles()) }
+        // Hiện seed data ngay lập tức → không bao giờ thấy màn trắng
+        viewModelScope.launch {
+            val seedVideos = videoRepository.getWorkoutVideos()
+            _state.update {
+                it.copy(
+                    isLoading = false,
+                    workoutVideos = seedVideos,
+                    recommendedRoutines = defaultRoutines(),
+                    recentArticles = defaultArticles()
+                )
             }
+        }
+
+        if (uid == null) {
+            GymLogger.w(TAG, "loadHomeData: no current user — seed data shown")
             return
         }
 
@@ -149,6 +159,8 @@ class HomeViewModel @Inject constructor(
         GymLogger.d(TAG, "retry")
         loadHomeData()
     }
+
+
 
     companion object {
         private const val TAG = "HomeViewModel"

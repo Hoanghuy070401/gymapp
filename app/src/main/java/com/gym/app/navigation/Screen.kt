@@ -12,6 +12,7 @@ sealed class Screen(val route: String) {
     data object Setup : Screen("setup")
     data object Home : Screen("home")
     data object Workout : Screen("workout")
+    data object AddVideo : Screen("add_video")
     data object VideoDetail : Screen("video_detail/{videoId}") {
         const val ARG_VIDEO_ID = "videoId"
         fun route(videoId: String) = "video_detail/$videoId"
