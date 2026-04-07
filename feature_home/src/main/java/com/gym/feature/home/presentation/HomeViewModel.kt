@@ -46,6 +46,7 @@ data class WeeklyChallenge(
 
 data class HomeState(
     val isLoading: Boolean = true,
+    val isRefreshing: Boolean = false,      // true khi đang pull-to-refresh
     val userName: String = "",
     val avatarPath: String? = null,
     val recommendedRoutines: List<RecommendedRoutine> = emptyList(),
@@ -160,7 +161,26 @@ class HomeViewModel @Inject constructor(
         loadHomeData()
     }
 
-
+    /** Pull-to-refresh: reload dữ liệu từ Firebase, hiện spinner nhỏ ở trên cùng */
+    fun refresh() {
+        GymLogger.d(TAG, "refresh")
+        _state.update { it.copy(isRefreshing = true) }
+        viewModelScope.launch {
+            try {
+                val videos = videoRepository.getWorkoutVideos()
+                _state.update {
+                    it.copy(
+                        isRefreshing = false,
+                        workoutVideos = videos,
+                        error = null
+                    )
+                }
+            } catch (e: Exception) {
+                GymLogger.e(TAG, e, "refresh failed")
+                _state.update { it.copy(isRefreshing = false, error = e.message) }
+            }
+        }
+    }
 
     companion object {
         private const val TAG = "HomeViewModel"

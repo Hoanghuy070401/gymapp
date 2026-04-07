@@ -24,6 +24,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,6 +50,7 @@ import com.gym.feature.home.data.YoutubeThumbnailQuality
 import com.gym.feature.home.data.youtubeThumbnailUrl
 import com.gym.feature.home.presentation.categories.HomeCategoryGrid
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
@@ -60,7 +64,14 @@ fun HomeScreen(
     onNavigateToVideo: (WorkoutVideo) -> Unit = {}
 ) {
     val uiState by viewModel.state.collectAsState()
+    val pullRefreshState = rememberPullToRefreshState()
 
+    PullToRefreshBox(
+        isRefreshing = uiState.isRefreshing,
+        onRefresh = { viewModel.refresh() },
+        state = pullRefreshState,
+        modifier = Modifier.fillMaxSize().background(AppColors.Surface)
+    ) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -139,9 +150,9 @@ fun HomeScreen(
                     )
                 }
             }
-        }
-    }
-}
+        }  // end LazyColumn
+    }  // end PullToRefreshBox
+}  // end HomeScreen
 
 // ─── Header ────────────────────────────────────────────────────────────────
 
