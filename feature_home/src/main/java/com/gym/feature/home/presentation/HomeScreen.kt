@@ -70,89 +70,94 @@ fun HomeScreen(
         isRefreshing = uiState.isRefreshing,
         onRefresh = { viewModel.refresh() },
         state = pullRefreshState,
-        modifier = Modifier.fillMaxSize().background(AppColors.Surface)
-    ) {
-    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColors.Surface),
-        contentPadding = PaddingValues(top = 48.dp, bottom = 100.dp)
+            .background(AppColors.Surface)
     ) {
-        // ── Header ──────────────────────────────────────────────────────
-        item(key = "header") {
-            HomeHeaderSection(
-                userName = uiState.userName,
-                onSearchClick = onNavigateToSearch,
-                onNotificationsClick = onNavigateToNotifications,
-                onProfileClick = onNavigateToProfile
-            )
-            Spacer(modifier = Modifier.height(AppSpacing.Large))
-        }
-
-        // ── Category Grid ────────────────────────────────────────────
-        item(key = "categories") {
-            HomeCategoryGrid(
-                onWorkoutClick = onNavigateToWorkout,
-                onProgressClick = onNavigateToProgress,
-                onNutritionClick = onNavigateToNutrition,
-                onCommunityClick = onNavigateToCommunity
-            )
-            Spacer(modifier = Modifier.height(AppSpacing.Large))
-        }
-
-        if (uiState.isLoading) {
-            item(key = "loading") {
-                Box(
-                    modifier = Modifier.fillMaxWidth().padding(AppSpacing.Large),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(color = AppColors.ElectricLime)
-                }
-            }
-        } else {
-            // ── Recommended Sessions ─────────────────────────────────
-            item(key = "recommendations") {
-                RecommendedSection(
-                    videos = uiState.workoutVideos,
-                    routines = uiState.recommendedRoutines,
-                    onVideoClick = onNavigateToVideo,
-                    onSeeAll = {}
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(AppColors.Surface),
+            contentPadding = PaddingValues(top = 48.dp, bottom = 100.dp)
+        ) {
+            // ── Header ──────────────────────────────────────────────────────
+            item(key = "header") {
+                HomeHeaderSection(
+                    userName = uiState.userName,
+                    onSearchClick = onNavigateToSearch,
+                    onNotificationsClick = onNavigateToNotifications,
+                    onProfileClick = onNavigateToProfile
                 )
                 Spacer(modifier = Modifier.height(AppSpacing.Large))
             }
 
-            // ── Workout Videos (YouTube) ─────────────────────────────
-            if (uiState.workoutVideos.isNotEmpty()) {
-                item(key = "videos") {
-                    WorkoutVideosSection(
+            // ── Category Grid ────────────────────────────────────────────
+            item(key = "categories") {
+                HomeCategoryGrid(
+                    onWorkoutClick = onNavigateToWorkout,
+                    onProgressClick = onNavigateToProgress,
+                    onNutritionClick = onNavigateToNutrition,
+                    onCommunityClick = onNavigateToCommunity
+                )
+                Spacer(modifier = Modifier.height(AppSpacing.Large))
+            }
+
+            if (uiState.isLoading) {
+                item(key = "loading") {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(AppSpacing.Large),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = AppColors.ElectricLime)
+                    }
+                }
+            } else {
+                // ── Recommended Sessions ─────────────────────────────────
+                item(key = "recommendations") {
+                    RecommendedSection(
                         videos = uiState.workoutVideos,
+                        routines = uiState.recommendedRoutines,
                         onVideoClick = onNavigateToVideo,
                         onSeeAll = {}
                     )
                     Spacer(modifier = Modifier.height(AppSpacing.Large))
                 }
-            }
 
-            // ── Weekly Challenge ────────────────────────────────────
-            uiState.activeChallenge?.let { challenge ->
-                item(key = "challenge") {
-                    WeeklyChallengeSection(challenge = challenge)
-                    Spacer(modifier = Modifier.height(AppSpacing.Large))
+                // ── Workout Videos (YouTube) ─────────────────────────────
+                if (uiState.workoutVideos.isNotEmpty()) {
+                    item(key = "videos") {
+                        WorkoutVideosSection(
+                            videos = uiState.workoutVideos,
+                            onVideoClick = onNavigateToVideo,
+                            onSeeAll = {}
+                        )
+                        Spacer(modifier = Modifier.height(AppSpacing.Large))
+                    }
                 }
-            }
 
-            // ── Articles & Tips ─────────────────────────────────────
-            if (uiState.recentArticles.isNotEmpty()) {
-                item(key = "articles") {
-                    ArticlesSection(
-                        articles = uiState.recentArticles,
-                        onSeeAll = {}
-                    )
+                // ── Weekly Challenge ────────────────────────────────────
+                uiState.activeChallenge?.let { challenge ->
+                    item(key = "challenge") {
+                        WeeklyChallengeSection(challenge = challenge)
+                        Spacer(modifier = Modifier.height(AppSpacing.Large))
+                    }
                 }
-            }
-        }  // end LazyColumn
-    }  // end PullToRefreshBox
-}  // end HomeScreen
+
+                // ── Articles & Tips ─────────────────────────────────────
+                if (uiState.recentArticles.isNotEmpty()) {
+                    item(key = "articles") {
+                        ArticlesSection(
+                            articles = uiState.recentArticles,
+                            onSeeAll = {}
+                        )
+                    }
+                }
+            }  // end LazyColumn
+        }  // end PullToRefreshBox
+    }  // end HomeScreen
+}  // end fun HomeScreen block
 
 // ─── Header ────────────────────────────────────────────────────────────────
 
@@ -188,13 +193,28 @@ private fun HomeHeaderSection(
 
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             HeaderIconButton(onClick = onSearchClick) {
-                Icon(Icons.Default.Search, contentDescription = "Search", tint = AppColors.OnSurface, modifier = Modifier.size(20.dp))
+                Icon(
+                    Icons.Default.Search,
+                    contentDescription = "Search",
+                    tint = AppColors.OnSurface,
+                    modifier = Modifier.size(20.dp)
+                )
             }
             HeaderIconButton(onClick = onNotificationsClick) {
-                Icon(Icons.Default.Notifications, contentDescription = "Notifications", tint = AppColors.OnSurface, modifier = Modifier.size(20.dp))
+                Icon(
+                    Icons.Default.Notifications,
+                    contentDescription = "Notifications",
+                    tint = AppColors.OnSurface,
+                    modifier = Modifier.size(20.dp)
+                )
             }
             HeaderIconButton(onClick = onProfileClick) {
-                Icon(Icons.Default.Person, contentDescription = "Profile", tint = AppColors.OnSurface, modifier = Modifier.size(20.dp))
+                Icon(
+                    Icons.Default.Person,
+                    contentDescription = "Profile",
+                    tint = AppColors.OnSurface,
+                    modifier = Modifier.size(20.dp)
+                )
             }
         }
     }
@@ -285,7 +305,14 @@ private fun RecommendedVideoCard(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Brush.linearGradient(listOf(AppColors.PrimaryKinetic, AppColors.TonalLavender)))
+                    .background(
+                        Brush.linearGradient(
+                            listOf(
+                                AppColors.PrimaryKinetic,
+                                AppColors.TonalLavender
+                            )
+                        )
+                    )
             )
         }
 
@@ -385,7 +412,9 @@ private fun RecommendedGradientCard(routine: RecommendedRoutine) {
             imageVector = Icons.Default.Star,
             contentDescription = null,
             tint = AppColors.OnSurface.copy(alpha = 0.6f),
-            modifier = Modifier.size(20.dp).align(Alignment.TopEnd)
+            modifier = Modifier
+                .size(20.dp)
+                .align(Alignment.TopEnd)
         )
         Column {
             Text(
@@ -397,8 +426,16 @@ private fun RecommendedGradientCard(routine: RecommendedRoutine) {
             )
             Spacer(modifier = Modifier.height(4.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text("▶ ${routine.durationMinutes} Mins", style = AppTypography.labelSmall.copy(fontSize = 9.sp), color = AppColors.OnSurface)
-                Text("🔥 ${routine.calories} Kcal", style = AppTypography.labelSmall.copy(fontSize = 9.sp), color = AppColors.OnSurface)
+                Text(
+                    "▶ ${routine.durationMinutes} Mins",
+                    style = AppTypography.labelSmall.copy(fontSize = 9.sp),
+                    color = AppColors.OnSurface
+                )
+                Text(
+                    "🔥 ${routine.calories} Kcal",
+                    style = AppTypography.labelSmall.copy(fontSize = 9.sp),
+                    color = AppColors.OnSurface
+                )
             }
         }
     }
@@ -457,7 +494,14 @@ private fun VideoCard(video: WorkoutVideo, onClick: () -> Unit) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Brush.linearGradient(listOf(AppColors.PrimaryKinetic, AppColors.TonalLavender)))
+                    .background(
+                        Brush.linearGradient(
+                            listOf(
+                                AppColors.PrimaryKinetic,
+                                AppColors.TonalLavender
+                            )
+                        )
+                    )
             )
         }
 
@@ -479,11 +523,18 @@ private fun VideoCard(video: WorkoutVideo, onClick: () -> Unit) {
                 .align(Alignment.Center),
             contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.Default.PlayArrow, contentDescription = "Play", tint = Color.Black, modifier = Modifier.size(24.dp))
+            Icon(
+                Icons.Default.PlayArrow,
+                contentDescription = "Play",
+                tint = Color.Black,
+                modifier = Modifier.size(24.dp)
+            )
         }
 
         Column(
-            modifier = Modifier.align(Alignment.BottomStart).padding(8.dp)
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(8.dp)
         ) {
             Text(
                 text = video.title,
@@ -508,7 +559,9 @@ private fun VideoCard(video: WorkoutVideo, onClick: () -> Unit) {
 @Composable
 private fun WeeklyChallengeSection(challenge: WeeklyChallenge) {
     GymCard(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = AppSpacing.ScreenHorizontal),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = AppSpacing.ScreenHorizontal),
         containerColor = AppColors.TonalLavender
     ) {
         Row(
@@ -594,7 +647,9 @@ private fun ArticleCard(article: ArticleTip) {
             imageVector = Icons.Default.Star,
             contentDescription = null,
             tint = AppColors.TonalLavender,
-            modifier = Modifier.size(18.dp).align(Alignment.TopEnd)
+            modifier = Modifier
+                .size(18.dp)
+                .align(Alignment.TopEnd)
         )
         Text(
             text = article.title,
