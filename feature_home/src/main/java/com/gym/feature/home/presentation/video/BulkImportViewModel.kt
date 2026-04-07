@@ -2,7 +2,9 @@ package com.gym.feature.home.presentation.video
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.gym.core.base.GymLogger
 import com.gym.feature.home.data.importer.BulkImporterService
+import com.gym.feature.home.data.importer.BulkImporterService.ExercisePreview
 import com.gym.feature.home.data.importer.ImportResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,63 +16,154 @@ import javax.inject.Inject
 
 // ── State ─────────────────────────────────────────────────────────────────────
 
-data class BulkImportState(
-    val isRunning: Boolean = false,
-    val progressCurrent: Int = 0,
-    val progressTotal: Int = 0,
-    val progressMessage: String = "",
+data class BulkImportUiState(
+    // Config
+    val batchSize: Int = 10,
+    val offset: Int = 0,
+
+    // Phase 1: Preview list
+    val isFetchingList: Boolean = false,
+    val exercises: List<ExercisePreview> = emptyList(),
+    val selectedIds: Set<Int> = emptySet(),
+    val fetchError: String? = null,
+
+    // Phase 2: Import in-progress
+    val isImporting: Boolean = false,
+    val importProgress: Int = 0,
+    val importTotal: Int = 0,
+    val importProgressMsg: String = "",
+
+    // Phase 3: Result
     val result: ImportResult? = null,
-    val error: String? = null
-)
+    val importError: String? = null
+) {
+    val allSelected: Boolean get() = exercises.isNotEmpty() && selectedIds.size == exercises.size
+    val noneSelected: Boolean get() = selectedIds.isEmpty()
+    val selectedCount: Int get() = selectedIds.size
+}
 
 // ── ViewModel ─────────────────────────────────────────────────────────────────
 
 @HiltViewModel
 class BulkImportViewModel @Inject constructor(
-    private val importer: BulkImporterService
+    private val service: BulkImporterService
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(BulkImportState())
-    val state: StateFlow<BulkImportState> = _state.asStateFlow()
+    private val _state = MutableStateFlow(BulkImportUiState())
+    val state: StateFlow<BulkImportUiState> = _state.asStateFlow()
 
-    /**
-     * Start bulk import. Safe to call multiple times (ignored if already running).
-     * @param batchSize  number of WGER exercises to process (recommend 5–20)
-     * @param offset     WGER pagination offset for subsequent runs
-     */
-    fun startImport(batchSize: Int = 10, offset: Int = 0) {
-        if (_state.value.isRunning) return
+    // ── Config ────────────────────────────────────────────────────────────────
 
-        _state.update { it.copy(isRunning = true, result = null, error = null, progressCurrent = 0) }
+    fun setBatchSize(value: Int) {
+        _state.update { it.copy(batchSize = value.coerceIn(1, 25)) }
+    }
 
+    fun setOffset(value: Int) {
+        _state.update { it.copy(offset = value.coerceAtLeast(0)) }
+    }
+
+    // ── Step 1: Fetch exercise list ───────────────────────────────────────────
+
+    fun fetchExerciseList() {
+        val s = _state.value
         viewModelScope.launch {
-            try {
-                val result = importer.runImport(
-                    batchSize = batchSize,
-                    offset = offset,
-                    onProgress = { current, total, message ->
-                        _state.update {
-                            it.copy(
-                                progressCurrent = current,
-                                progressTotal = total,
-                                progressMessage = message
-                            )
-                        }
-                    }
+            _state.update {
+                it.copy(
+                    isFetchingList = true,
+                    exercises = emptyList(),
+                    selectedIds = emptySet(),
+                    fetchError = null,
+                    result = null,
+                    importError = null
                 )
-                _state.update { it.copy(isRunning = false, result = result) }
+            }
+            try {
+                val previews = service.fetchExercisePreviews(
+                    batchSize = s.batchSize,
+                    offset = s.offset
+                )
+                _state.update { it.copy(isFetchingList = false, exercises = previews) }
+                GymLogger.i(TAG, "Fetched ${previews.size} exercises for preview")
             } catch (e: Exception) {
+                GymLogger.e(TAG, e, "fetchExerciseList failed")
                 _state.update {
-                    it.copy(
-                        isRunning = false,
-                        error = e.message ?: "Import thất bại"
-                    )
+                    it.copy(isFetchingList = false, fetchError = e.message ?: "Lỗi kết nối")
                 }
             }
         }
     }
 
-    fun clearResult() {
-        _state.update { it.copy(result = null, error = null) }
+    // ── Step 2: Selection ─────────────────────────────────────────────────────
+
+    fun toggleSelection(id: Int) {
+        _state.update { s ->
+            val newSet = if (id in s.selectedIds) s.selectedIds - id else s.selectedIds + id
+            s.copy(selectedIds = newSet)
+        }
+    }
+
+    fun selectAll() {
+        _state.update { s ->
+            s.copy(selectedIds = s.exercises.map { it.id }.toSet())
+        }
+    }
+
+    fun clearSelection() {
+        _state.update { it.copy(selectedIds = emptySet()) }
+    }
+
+    // ── Step 3: Import selected ───────────────────────────────────────────────
+
+    fun importSelected() {
+        val s = _state.value
+        if (s.selectedIds.isEmpty()) return
+
+        viewModelScope.launch {
+            _state.update {
+                it.copy(
+                    isImporting = true,
+                    importProgress = 0,
+                    importTotal = it.selectedIds.size,
+                    importProgressMsg = "Bắt đầu...",
+                    result = null,
+                    importError = null
+                )
+            }
+            try {
+                val result = service.runImportSelected(
+                    selectedIds = s.selectedIds,
+                    onProgress = { current, total, msg ->
+                        _state.update {
+                            it.copy(
+                                importProgress = current,
+                                importTotal = total,
+                                importProgressMsg = msg
+                            )
+                        }
+                    }
+                )
+                _state.update {
+                    it.copy(
+                        isImporting = false,
+                        result = result,
+                        exercises = emptyList(),
+                        selectedIds = emptySet()
+                    )
+                }
+            } catch (e: Exception) {
+                GymLogger.e(TAG, e, "importSelected failed")
+                _state.update {
+                    it.copy(isImporting = false, importError = e.message ?: "Import thất bại")
+                }
+            }
+        }
+    }
+
+    fun dismissResult() {
+        _state.update { it.copy(result = null, importError = null) }
+    }
+
+    companion object {
+        private const val TAG = "BulkImportViewModel"
     }
 }

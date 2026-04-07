@@ -15,7 +15,8 @@ data class ImportResult(
     val imported: Int,
     val skippedNotEmbeddable: Int,
     val skippedNoVideo: Int,
-    val errors: Int
+    val errors: Int,
+    val errorMessages: List<String> = emptyList()  // per-exercise error details
 )
 
 // ── Service ───────────────────────────────────────────────────────────────────
@@ -23,9 +24,13 @@ data class ImportResult(
 /**
  * Orchestrates: WGER exercise page → YouTube search → embeddable filter → auto-tag → Firebase.
  *
+ * Flow:
+ *  1. fetchExercisePreviews()  — load WGER list (no YouTube quota used)
+ *  2. User selects exercises in UI
+ *  3. runImportSelected()      — YouTube search + sanitize + Firebase for selected
+ *
  * Designed for ADMIN-ONLY use. Never call from user-facing flows.
- * Respects YouTube 10,000 quota/day: each exercise costs ~101 quota units (100 search + 1 videos.list).
- * → Max ~99 exercises per day safely (leave 1% buffer).
+ * YouTube quota: each exercise costs ~101 units (100 search + 1 videos.list).
  */
 @Singleton
 class BulkImporterService @Inject constructor(
@@ -49,42 +54,85 @@ class BulkImporterService @Inject constructor(
 
     private val apiKey: String get() = BuildConfig.YOUTUBE_API_KEY
 
+    // ── Cache: raw WGER results from the last preview fetch ──────────────────
+    private var cachedExercises: List<WgerExerciseInfo> = emptyList()
+
+    // ── Preview model ─────────────────────────────────────────────────────────
+
+    /** Lightweight exercise info shown in the selection list. */
+    data class ExercisePreview(
+        val id: Int,
+        val name: String,
+        val category: String,
+        val muscles: String,
+        val level: String
+    )
+
+    // ── Step 1: Fetch previews (free — no YouTube calls) ─────────────────────
+
     /**
-     * Run one import batch.
-     *
-     * @param batchSize  max exercises to fetch from WGER (recommend ≤ 20 to stay within quota)
-     * @param offset     pagination offset into WGER exercise list
-     * @param onProgress callback with (currentIndex, totalCount, message) for UI updates
+     * Load a page of exercises from WGER.
+     * Results are cached so [runImportSelected] can reference full objects.
      */
-    suspend fun runImport(
+    suspend fun fetchExercisePreviews(
         batchSize: Int = 10,
-        offset: Int = 0,
+        offset: Int = 0
+    ): List<ExercisePreview> {
+        val results = wgerApi.getExercises(limit = batchSize, offset = offset).results
+        cachedExercises = results          // cache for import step
+        GymLogger.i(TAG, "Fetched ${results.size} exercises (offset=$offset)")
+        return results.map { exercise ->
+            ExercisePreview(
+                id = exercise.id,
+                name = exercise.englishName,
+                category = exercise.category.name,
+                muscles = exercise.muscles.joinToString(", ") { it.nameEn }
+                    .ifBlank { exercise.musclesSecondary.joinToString(", ") { it.nameEn } }
+                    .ifBlank { "General" },
+                level = inferLevel(exercise)
+            )
+        }
+    }
+
+    // ── Step 2: Import selected exercises (uses YouTube quota) ────────────────
+
+    /**
+     * Import only the exercises whose IDs are in [selectedIds].
+     * Uses the cached WGER results from the last [fetchExercisePreviews] call.
+     */
+    suspend fun runImportSelected(
+        selectedIds: Set<Int>,
         onProgress: (Int, Int, String) -> Unit = { _, _, _ -> }
+    ): ImportResult {
+        val toImport = cachedExercises.filter { it.id in selectedIds }
+        if (toImport.isEmpty()) {
+            GymLogger.w(TAG, "runImportSelected called but no matching exercises in cache")
+            return ImportResult(0, 0, 0, 0)
+        }
+        return runImportInternal(toImport, onProgress)
+    }
+
+    // ── Core import pipeline ──────────────────────────────────────────────────
+
+    private suspend fun runImportInternal(
+        exercises: List<WgerExerciseInfo>,
+        onProgress: (Int, Int, String) -> Unit
     ): ImportResult {
         var imported = 0
         var skippedNotEmbeddable = 0
         var skippedNoVideo = 0
         var errors = 0
-
-        GymLogger.i(TAG, "BulkImport starting: batchSize=$batchSize offset=$offset")
-
-        // ── Step 1: Fetch exercises from WGER ────────────────────────────────
-        val exercises = try {
-            wgerApi.getExercises(limit = batchSize, offset = offset).results
-        } catch (e: Exception) {
-            GymLogger.e(TAG, e, "WGER fetch failed")
-            return ImportResult(0, 0, 0, batchSize)
-        }
+        val errorMessages = mutableListOf<String>()
 
         val total = exercises.size
-        GymLogger.i(TAG, "WGER returned $total exercises")
+        GymLogger.i(TAG, "Import starting: $total exercises selected")
 
         exercises.forEachIndexed { index, exercise ->
             val name = exercise.englishName
             onProgress(index + 1, total, "Đang xử lý: $name")
 
             try {
-                // ── Step 2: Search YouTube ───────────────────────────────────
+                // ── YouTube search ───────────────────────────────────────────
                 val searchResults = youtubeApi.searchVideos(
                     query = "$name workout tutorial proper form",
                     maxResults = 2,
@@ -92,37 +140,36 @@ class BulkImporterService @Inject constructor(
                 ).items
 
                 if (searchResults.isEmpty()) {
-                    GymLogger.d(TAG, "No YouTube results for '$name' — skipping")
+                    GymLogger.d(TAG, "No YouTube results for '$name'")
                     skippedNoVideo++
                     return@forEachIndexed
                 }
 
-                // ── Step 3: Get video details (embeddable check) ─────────────
+                // ── Embeddable check ─────────────────────────────────────────
                 val videoIds = searchResults.joinToString(",") { it.id.videoId }
                 val videoDetails = youtubeApi.getVideoDetails(ids = videoIds, key = apiKey).items
-
-                // SILENT FILTER: only keep videos where embeddable == true
                 val safeVideos = videoDetails.filter { it.status.embeddable }
 
                 if (safeVideos.isEmpty()) {
-                    GymLogger.d(TAG, "All videos for '$name' have embedding disabled — skipping")
+                    GymLogger.d(TAG, "All videos for '$name' are non-embeddable")
                     skippedNotEmbeddable += videoDetails.size
                     return@forEachIndexed
                 }
 
-                // Pick the first safe video
                 val video = safeVideos.first()
                 val youtubeUrl = "https://www.youtube.com/watch?v=${video.id}"
 
-                // ── Step 4: Auto-tag based on WGER category + muscles ────────
+                // ── Auto-tag ──────────────────────────────────────────────────
                 val (targetAges, targetGoals, targetBMIs) = autoTag(exercise)
                 val level = inferLevel(exercise)
 
-                // ── Step 5: Save to Firebase ─────────────────────────────────
+                // ── Save to Firebase ──────────────────────────────────────────
                 videoRepository.addWorkoutVideo(
                     title = video.snippet.title,
                     youtubeUrl = youtubeUrl,
-                    description = exercise.englishDescription.ifBlank { video.snippet.description.take(200) },
+                    description = exercise.englishDescription.ifBlank {
+                        video.snippet.description.take(200)
+                    },
                     durationMinutes = video.durationMinutes,
                     level = level,
                     targetAges = targetAges,
@@ -130,40 +177,26 @@ class BulkImporterService @Inject constructor(
                     targetBMIs = targetBMIs
                 )
 
-                GymLogger.i(TAG, "Imported '$name' (${video.id}) ages=$targetAges goals=$targetGoals")
+                GymLogger.i(TAG, "Imported '$name' (${video.id})")
                 imported++
 
             } catch (e: Exception) {
+                val msg = "[$name] ${e.javaClass.simpleName}: ${e.message?.take(80) ?: "Unknown error"}"
                 GymLogger.e(TAG, e, "Error importing '$name'")
+                errorMessages += msg
                 errors++
             }
 
-            // Throttle to avoid hammering APIs
-            delay(300L)
+            delay(300L) // throttle
         }
 
-        val result = ImportResult(imported, skippedNotEmbeddable, skippedNoVideo, errors)
-        GymLogger.i(TAG, "BulkImport done: $result")
+        val result = ImportResult(imported, skippedNotEmbeddable, skippedNoVideo, errors, errorMessages)
+        GymLogger.i(TAG, "Import done: $result")
         return result
     }
 
-    // ── Auto-tagging algorithm ────────────────────────────────────────────────
+    // ── Auto-tagging ──────────────────────────────────────────────────────────
 
-    /**
-     * Maps WGER exercise metadata → FitBody demographic tags.
-     *
-     * Age logic (safety-first):
-     *   - High-load compound lifts (Chest / Back / Legs) → "18-25", "26-35"
-     *   - Mobility / Stretching / Flexibility → all ages including "12-17", "50+"
-     *   - Default (Arms, Shoulders, Abs) → "18-25", "26-35", "36-50"
-     *
-     * Goal logic:
-     *   - Cardio → "Lose Weight", "Get Fitter"
-     *   - Legs / Chest / Back → "Gain Weight", "Get Fitter"
-     *   - Calves / Abs → "Get Fitter"
-     *   - Mobility / Stretching → "Flexibility", "Get Fitter"
-     *   - Arms → "Gain Weight", "Get Fitter"
-     */
     private fun autoTag(exercise: WgerExerciseInfo): Triple<List<String>, List<String>, List<String>> {
         val categoryName = exercise.category.name.lowercase()
         val muscleNames = exercise.muscles.map { it.nameEn.lowercase() }
@@ -174,35 +207,29 @@ class BulkImporterService @Inject constructor(
                 categoryName.contains("yoga") ||
                 categoryName.contains("flexib")
 
-        val isCardio = categoryName.contains("cardio") ||
-                categoryName.contains("endurance")
+        val isCardio = categoryName.contains("cardio") || categoryName.contains("endurance")
 
-        val isHeavyCompound = muscleNames.any { it.contains("gluteus") || it.contains("quadriceps") || it.contains("pectoralis") } &&
-                !isMobility
+        val isHeavyCompound = muscleNames.any {
+            it.contains("gluteus") || it.contains("quadriceps") || it.contains("pectoralis")
+        } && !isMobility
 
-        // ── Ages ──────────────────────────────────────────────────────────────
         val targetAges = when {
-            isMobility -> listOf("12-17", "18-25", "26-35", "36-50", "50+")
-            isCardio   -> listOf("18-25", "26-35", "36-50")
+            isMobility      -> listOf("12-17", "18-25", "26-35", "36-50", "50+")
+            isCardio        -> listOf("18-25", "26-35", "36-50")
             isHeavyCompound -> listOf("18-25", "26-35")
-            else       -> listOf("18-25", "26-35", "36-50")
+            else            -> listOf("18-25", "26-35", "36-50")
         }
 
-        // ── Goals ─────────────────────────────────────────────────────────────
         val targetGoals = when {
-            isMobility -> listOf("Flexibility", "Get Fitter")
-            isCardio   -> listOf("Lose Weight", "Get Fitter")
+            isMobility      -> listOf("Flexibility", "Get Fitter")
+            isCardio        -> listOf("Lose Weight", "Get Fitter")
             isHeavyCompound -> listOf("Gain Weight", "Get Fitter")
-            else       -> listOf("Get Fitter")
+            else            -> listOf("Get Fitter")
         }
 
-        // ── BMIs: default All unless mobility (explicitly ok for everyone) ────
-        val targetBMIs = listOf("All")
-
-        return Triple(targetAges, targetGoals, targetBMIs)
+        return Triple(targetAges, targetGoals, listOf("All"))
     }
 
-    /** Infer exercise level from equipment and muscle complexity */
     private fun inferLevel(exercise: WgerExerciseInfo): String {
         val hasBarbell = exercise.equipment.any { it.name.lowercase().contains("barbell") }
         val hasDumbbell = exercise.equipment.any { it.name.lowercase().contains("dumbbell") }
