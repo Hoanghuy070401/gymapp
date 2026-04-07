@@ -2,8 +2,8 @@ package com.gym.app
 
 import android.app.Application
 import android.util.Log
-import com.google.firebase.BuildConfig
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.gym.app.BuildConfig
 import dagger.hilt.android.HiltAndroidApp
 import timber.log.Timber
 
