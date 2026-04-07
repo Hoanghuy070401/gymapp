@@ -147,11 +147,17 @@ class BulkImporterService @Inject constructor(
 
             try {
                 // ── YouTube search ───────────────────────────────────────────
+                val searchQuery = "$name workout tutorial proper form"
                 val searchResults = youtubeApi.searchVideos(
-                    query = "$name workout tutorial proper form",
+                    query = searchQuery,
                     maxResults = 2,
                     key = apiKey
                 ).items
+
+                GymLogger.d(TAG, "➔ Search '$searchQuery' → ${searchResults.size} results")
+                searchResults.forEachIndexed { i, r ->
+                    GymLogger.d(TAG, "  result[$i] videoId=${r.id.videoId}")
+                }
 
                 if (searchResults.isEmpty()) {
                     GymLogger.d(TAG, "No YouTube results for '$name'")
@@ -161,7 +167,11 @@ class BulkImporterService @Inject constructor(
 
                 // ── Embeddable check ─────────────────────────────────────────
                 val videoIds = searchResults.joinToString(",") { it.id.videoId }
+                GymLogger.d(TAG, "➔ Fetching details for videoIds=[$videoIds]")
                 val videoDetails = youtubeApi.getVideoDetails(ids = videoIds, key = apiKey).items
+                videoDetails.forEach { v ->
+                    GymLogger.d(TAG, "  video id=${v.id} embeddable=${v.status.embeddable} title=${v.snippet.title.take(40)}")
+                }
                 val safeVideos = videoDetails.filter { it.status.embeddable }
 
                 if (safeVideos.isEmpty()) {
@@ -172,6 +182,7 @@ class BulkImporterService @Inject constructor(
 
                 val video = safeVideos.first()
                 val youtubeUrl = "https://www.youtube.com/watch?v=${video.id}"
+                GymLogger.i(TAG, "✔ '$name' → $youtubeUrl | title: ${video.snippet.title.take(50)}")
 
                 // ── Auto-tag ──────────────────────────────────────────────────
                 val (targetAges, targetGoals, targetBMIs) = autoTag(exercise)
