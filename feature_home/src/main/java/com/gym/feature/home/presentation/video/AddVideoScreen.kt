@@ -12,6 +12,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -41,6 +42,7 @@ private val BMIS = listOf("All", "Underweight", "Normal", "Overweight", "Obese")
 @Composable
 fun AddVideoScreen(
     onBack: () -> Unit,
+    onNavigateToBulkImport: () -> Unit = {},
     viewModel: AddVideoViewModel = hiltViewModel()
 ) {
     val form by viewModel.form.collectAsState()
@@ -123,6 +125,15 @@ fun AddVideoScreen(
                             Icons.Default.ArrowBack,
                             contentDescription = "Quay lại",
                             tint = AppColors.TonalLavender
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onNavigateToBulkImport) {
+                        Icon(
+                            Icons.Default.CloudDownload,
+                            contentDescription = "Bulk Import",
+                            tint = AppColors.OnSurfaceVariant
                         )
                     }
                 },

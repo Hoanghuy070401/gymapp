@@ -22,6 +22,7 @@ import com.gym.core.designsystem.theme.AppColors
 import com.gym.feature.home.presentation.HomeScreen
 import com.gym.feature.home.presentation.HomeViewModel
 import com.gym.feature.home.presentation.video.AddVideoScreen
+import com.gym.feature.home.presentation.video.BulkImportScreen
 import com.gym.feature.home.presentation.video.VideoDetailScreen
 import com.gym.feature.workout.presentation.WorkoutScreen
 import androidx.navigation.NavType
@@ -120,6 +121,16 @@ fun MainScreen(
                 // ── Add Video (admin seed screen) ─────────────────────────────
                 composable(Screen.AddVideo.route) {
                     AddVideoScreen(
+                        onBack = { innerNav.popBackStack() },
+                        onNavigateToBulkImport = {
+                            innerNav.navigate(Screen.BulkImport.route)
+                        }
+                    )
+                }
+
+                // ── Bulk Import (admin tool) ──────────────────────────────────
+                composable(Screen.BulkImport.route) {
+                    BulkImportScreen(
                         onBack = { innerNav.popBackStack() }
                     )
                 }

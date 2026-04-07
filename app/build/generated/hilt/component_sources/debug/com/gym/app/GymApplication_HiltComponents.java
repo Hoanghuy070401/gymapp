@@ -6,6 +6,7 @@ import com.gym.feature.auth.di.AuthModule;
 import com.gym.feature.auth.presentation.AuthViewModel_HiltModules;
 import com.gym.feature.auth.presentation.setup.SetupViewModel_HiltModules;
 import com.gym.feature.home.presentation.HomeViewModel_HiltModules;
+import com.gym.feature.home.presentation.video.AddVideoViewModel_HiltModules;
 import com.gym.feature.workout.presentation.WorkoutViewModel_HiltModules;
 import dagger.Binds;
 import dagger.Component;
@@ -160,6 +161,7 @@ public final class GymApplication_HiltComponents {
 
   @Subcomponent(
       modules = {
+          AddVideoViewModel_HiltModules.KeyModule.class,
           AuthViewModel_HiltModules.KeyModule.class,
           ActivityCBuilderModule.class,
           ViewModelCBuilderModule.class,
@@ -203,6 +205,7 @@ public final class GymApplication_HiltComponents {
 
   @Subcomponent(
       modules = {
+          AddVideoViewModel_HiltModules.BindsModule.class,
           AuthViewModel_HiltModules.BindsModule.class,
           HiltWrapper_HiltViewModelFactory_ViewModelModule.class,
           HomeViewModel_HiltModules.BindsModule.class,

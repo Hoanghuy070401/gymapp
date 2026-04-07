@@ -4,8 +4,8 @@ package com.gym.app.navigation;
 public final class MainScreenKt {
     
     /**
-     * Main app shell — wraps Home + Workout + future tabs with Bottom Navigation.
-     * Includes admin FAB (+) for adding videos to Firebase (temp feature).
+     * Main app shell — manages bottom navigation + inner NavHost.
+     * FAB on Home tab navigates to AddVideoScreen (dedicated screen, Approach A).
      */
     @androidx.compose.runtime.Composable()
     public static final void MainScreen(@org.jetbrains.annotations.NotNull()

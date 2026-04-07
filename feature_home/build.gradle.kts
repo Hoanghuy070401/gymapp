@@ -11,6 +11,10 @@ android {
 
     defaultConfig {
         minSdk = 26
+
+        // Read YouTube API key from local.properties (never commit the key)
+        val youtubeApiKey = project.findProperty("YOUTUBE_API_KEY") as? String ?: ""
+        buildConfigField("String", "YOUTUBE_API_KEY", "\"$youtubeApiKey\"")
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -21,6 +25,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.15"
@@ -60,4 +65,8 @@ dependencies {
 
     // YouTube player
     implementation(libs.android.youtube.player)
+
+    // Retrofit (WGER + YouTube Data API)
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
 }

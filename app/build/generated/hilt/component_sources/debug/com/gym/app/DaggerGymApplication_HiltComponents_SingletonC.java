@@ -28,6 +28,8 @@ import com.gym.feature.auth.presentation.setup.SetupViewModel_HiltModules;
 import com.gym.feature.home.data.VideoRepository;
 import com.gym.feature.home.presentation.HomeViewModel;
 import com.gym.feature.home.presentation.HomeViewModel_HiltModules;
+import com.gym.feature.home.presentation.video.AddVideoViewModel;
+import com.gym.feature.home.presentation.video.AddVideoViewModel_HiltModules;
 import com.gym.feature.workout.presentation.WorkoutViewModel;
 import com.gym.feature.workout.presentation.WorkoutViewModel_HiltModules;
 import dagger.hilt.android.ActivityRetainedLifecycle;
@@ -388,7 +390,7 @@ public final class DaggerGymApplication_HiltComponents_SingletonC {
 
     @Override
     public Map<Class<?>, Boolean> getViewModelKeys() {
-      return LazyClassKeyMap.<Boolean>of(ImmutableMap.<String, Boolean>of(LazyClassKeyProvider.com_gym_feature_auth_presentation_AuthViewModel, AuthViewModel_HiltModules.KeyModule.provide(), LazyClassKeyProvider.com_gym_feature_home_presentation_HomeViewModel, HomeViewModel_HiltModules.KeyModule.provide(), LazyClassKeyProvider.com_gym_feature_auth_presentation_setup_SetupViewModel, SetupViewModel_HiltModules.KeyModule.provide(), LazyClassKeyProvider.com_gym_feature_workout_presentation_WorkoutViewModel, WorkoutViewModel_HiltModules.KeyModule.provide()));
+      return LazyClassKeyMap.<Boolean>of(ImmutableMap.<String, Boolean>of(LazyClassKeyProvider.com_gym_feature_home_presentation_video_AddVideoViewModel, AddVideoViewModel_HiltModules.KeyModule.provide(), LazyClassKeyProvider.com_gym_feature_auth_presentation_AuthViewModel, AuthViewModel_HiltModules.KeyModule.provide(), LazyClassKeyProvider.com_gym_feature_home_presentation_HomeViewModel, HomeViewModel_HiltModules.KeyModule.provide(), LazyClassKeyProvider.com_gym_feature_auth_presentation_setup_SetupViewModel, SetupViewModel_HiltModules.KeyModule.provide(), LazyClassKeyProvider.com_gym_feature_workout_presentation_WorkoutViewModel, WorkoutViewModel_HiltModules.KeyModule.provide()));
     }
 
     @Override
@@ -416,6 +418,8 @@ public final class DaggerGymApplication_HiltComponents_SingletonC {
 
       static String com_gym_feature_home_presentation_HomeViewModel = "com.gym.feature.home.presentation.HomeViewModel";
 
+      static String com_gym_feature_home_presentation_video_AddVideoViewModel = "com.gym.feature.home.presentation.video.AddVideoViewModel";
+
       @KeepFieldType
       WorkoutViewModel com_gym_feature_workout_presentation_WorkoutViewModel2;
 
@@ -427,6 +431,9 @@ public final class DaggerGymApplication_HiltComponents_SingletonC {
 
       @KeepFieldType
       HomeViewModel com_gym_feature_home_presentation_HomeViewModel2;
+
+      @KeepFieldType
+      AddVideoViewModel com_gym_feature_home_presentation_video_AddVideoViewModel2;
     }
   }
 
@@ -436,6 +443,8 @@ public final class DaggerGymApplication_HiltComponents_SingletonC {
     private final ActivityRetainedCImpl activityRetainedCImpl;
 
     private final ViewModelCImpl viewModelCImpl = this;
+
+    private Provider<AddVideoViewModel> addVideoViewModelProvider;
 
     private Provider<AuthViewModel> authViewModelProvider;
 
@@ -470,15 +479,16 @@ public final class DaggerGymApplication_HiltComponents_SingletonC {
     @SuppressWarnings("unchecked")
     private void initialize(final SavedStateHandle savedStateHandleParam,
         final ViewModelLifecycle viewModelLifecycleParam) {
-      this.authViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 0);
-      this.homeViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 1);
-      this.setupViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 2);
-      this.workoutViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 3);
+      this.addVideoViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 0);
+      this.authViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 1);
+      this.homeViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 2);
+      this.setupViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 3);
+      this.workoutViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 4);
     }
 
     @Override
     public Map<Class<?>, javax.inject.Provider<ViewModel>> getHiltViewModelMap() {
-      return LazyClassKeyMap.<javax.inject.Provider<ViewModel>>of(ImmutableMap.<String, javax.inject.Provider<ViewModel>>of(LazyClassKeyProvider.com_gym_feature_auth_presentation_AuthViewModel, ((Provider) authViewModelProvider), LazyClassKeyProvider.com_gym_feature_home_presentation_HomeViewModel, ((Provider) homeViewModelProvider), LazyClassKeyProvider.com_gym_feature_auth_presentation_setup_SetupViewModel, ((Provider) setupViewModelProvider), LazyClassKeyProvider.com_gym_feature_workout_presentation_WorkoutViewModel, ((Provider) workoutViewModelProvider)));
+      return LazyClassKeyMap.<javax.inject.Provider<ViewModel>>of(ImmutableMap.<String, javax.inject.Provider<ViewModel>>of(LazyClassKeyProvider.com_gym_feature_home_presentation_video_AddVideoViewModel, ((Provider) addVideoViewModelProvider), LazyClassKeyProvider.com_gym_feature_auth_presentation_AuthViewModel, ((Provider) authViewModelProvider), LazyClassKeyProvider.com_gym_feature_home_presentation_HomeViewModel, ((Provider) homeViewModelProvider), LazyClassKeyProvider.com_gym_feature_auth_presentation_setup_SetupViewModel, ((Provider) setupViewModelProvider), LazyClassKeyProvider.com_gym_feature_workout_presentation_WorkoutViewModel, ((Provider) workoutViewModelProvider)));
     }
 
     @Override
@@ -488,25 +498,30 @@ public final class DaggerGymApplication_HiltComponents_SingletonC {
 
     @IdentifierNameString
     private static final class LazyClassKeyProvider {
-      static String com_gym_feature_home_presentation_HomeViewModel = "com.gym.feature.home.presentation.HomeViewModel";
-
-      static String com_gym_feature_auth_presentation_setup_SetupViewModel = "com.gym.feature.auth.presentation.setup.SetupViewModel";
-
-      static String com_gym_feature_workout_presentation_WorkoutViewModel = "com.gym.feature.workout.presentation.WorkoutViewModel";
+      static String com_gym_feature_home_presentation_video_AddVideoViewModel = "com.gym.feature.home.presentation.video.AddVideoViewModel";
 
       static String com_gym_feature_auth_presentation_AuthViewModel = "com.gym.feature.auth.presentation.AuthViewModel";
 
+      static String com_gym_feature_auth_presentation_setup_SetupViewModel = "com.gym.feature.auth.presentation.setup.SetupViewModel";
+
+      static String com_gym_feature_home_presentation_HomeViewModel = "com.gym.feature.home.presentation.HomeViewModel";
+
+      static String com_gym_feature_workout_presentation_WorkoutViewModel = "com.gym.feature.workout.presentation.WorkoutViewModel";
+
       @KeepFieldType
-      HomeViewModel com_gym_feature_home_presentation_HomeViewModel2;
+      AddVideoViewModel com_gym_feature_home_presentation_video_AddVideoViewModel2;
+
+      @KeepFieldType
+      AuthViewModel com_gym_feature_auth_presentation_AuthViewModel2;
 
       @KeepFieldType
       SetupViewModel com_gym_feature_auth_presentation_setup_SetupViewModel2;
 
       @KeepFieldType
-      WorkoutViewModel com_gym_feature_workout_presentation_WorkoutViewModel2;
+      HomeViewModel com_gym_feature_home_presentation_HomeViewModel2;
 
       @KeepFieldType
-      AuthViewModel com_gym_feature_auth_presentation_AuthViewModel2;
+      WorkoutViewModel com_gym_feature_workout_presentation_WorkoutViewModel2;
     }
 
     private static final class SwitchingProvider<T> implements Provider<T> {
@@ -530,16 +545,19 @@ public final class DaggerGymApplication_HiltComponents_SingletonC {
       @Override
       public T get() {
         switch (id) {
-          case 0: // com.gym.feature.auth.presentation.AuthViewModel 
+          case 0: // com.gym.feature.home.presentation.video.AddVideoViewModel 
+          return (T) new AddVideoViewModel(singletonCImpl.videoRepositoryProvider.get());
+
+          case 1: // com.gym.feature.auth.presentation.AuthViewModel 
           return (T) new AuthViewModel(singletonCImpl.provideAuthRepositoryProvider.get());
 
-          case 1: // com.gym.feature.home.presentation.HomeViewModel 
+          case 2: // com.gym.feature.home.presentation.HomeViewModel 
           return (T) new HomeViewModel(singletonCImpl.videoRepositoryProvider.get());
 
-          case 2: // com.gym.feature.auth.presentation.setup.SetupViewModel 
+          case 3: // com.gym.feature.auth.presentation.setup.SetupViewModel 
           return (T) new SetupViewModel(singletonCImpl.provideAuthRepositoryProvider.get(), singletonCImpl.provideProfileImageStorageProvider.get());
 
-          case 3: // com.gym.feature.workout.presentation.WorkoutViewModel 
+          case 4: // com.gym.feature.workout.presentation.WorkoutViewModel 
           return (T) new WorkoutViewModel(viewModelCImpl.getWorkoutsUseCase(), viewModelCImpl.saveWorkoutUseCase(), viewModelCImpl.syncWorkoutsUseCase());
 
           default: throw new AssertionError(id);
@@ -622,9 +640,9 @@ public final class DaggerGymApplication_HiltComponents_SingletonC {
 
     private final SingletonCImpl singletonCImpl = this;
 
-    private Provider<AuthRepository> provideAuthRepositoryProvider;
-
     private Provider<VideoRepository> videoRepositoryProvider;
+
+    private Provider<AuthRepository> provideAuthRepositoryProvider;
 
     private Provider<ProfileImageStorage> provideProfileImageStorageProvider;
 
@@ -644,8 +662,8 @@ public final class DaggerGymApplication_HiltComponents_SingletonC {
 
     @SuppressWarnings("unchecked")
     private void initialize(final ApplicationContextModule applicationContextModuleParam) {
-      this.provideAuthRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<AuthRepository>(singletonCImpl, 0));
-      this.videoRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<VideoRepository>(singletonCImpl, 1));
+      this.videoRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<VideoRepository>(singletonCImpl, 0));
+      this.provideAuthRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<AuthRepository>(singletonCImpl, 1));
       this.provideProfileImageStorageProvider = DoubleCheck.provider(new SwitchingProvider<ProfileImageStorage>(singletonCImpl, 2));
       this.provideGymDatabaseProvider = DoubleCheck.provider(new SwitchingProvider<GymDatabase>(singletonCImpl, 5));
       this.provideWorkoutDaoProvider = DoubleCheck.provider(new SwitchingProvider<WorkoutDao>(singletonCImpl, 4));
@@ -686,11 +704,11 @@ public final class DaggerGymApplication_HiltComponents_SingletonC {
       @Override
       public T get() {
         switch (id) {
-          case 0: // com.gym.feature.auth.data.AuthRepository 
-          return (T) AuthModule_ProvideAuthRepositoryFactory.provideAuthRepository();
-
-          case 1: // com.gym.feature.home.data.VideoRepository 
+          case 0: // com.gym.feature.home.data.VideoRepository 
           return (T) new VideoRepository();
+
+          case 1: // com.gym.feature.auth.data.AuthRepository 
+          return (T) AuthModule_ProvideAuthRepositoryFactory.provideAuthRepository();
 
           case 2: // com.gym.feature.auth.data.ProfileImageStorage 
           return (T) AuthModule_ProvideProfileImageStorageFactory.provideProfileImageStorage(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
