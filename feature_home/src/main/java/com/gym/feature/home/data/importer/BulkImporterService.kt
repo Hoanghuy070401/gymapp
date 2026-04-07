@@ -80,8 +80,8 @@ class BulkImporterService @Inject constructor(
     ): List<ExercisePreview> {
         val results = wgerApi.getExercises(limit = batchSize, offset = offset).results
         cachedExercises = results          // cache for import step
-        GymLogger.i(TAG, "Fetched ${results.size} exercises (offset=$offset)")
-        return results.map { exercise ->
+
+        val previews = results.map { exercise ->
             ExercisePreview(
                 id = exercise.id,
                 name = exercise.englishName,
@@ -92,6 +92,20 @@ class BulkImporterService @Inject constructor(
                 level = inferLevel(exercise)
             )
         }
+
+        // ── Log danh sách exercise đã fetch ───────────────────────────────
+        GymLogger.i(TAG, "═══════════════════════════════════════════════════")
+        GymLogger.i(TAG, "WGER Fetch: ${previews.size} exercises (offset=$offset, batch=$batchSize)")
+        GymLogger.i(TAG, "───────────────────────────────────────────────────")
+        previews.forEachIndexed { i, ex ->
+            GymLogger.i(
+                TAG,
+                "#${i + 1} [id=${ex.id}] ${ex.name} | ${ex.category} | ${ex.level} | 💪 ${ex.muscles}"
+            )
+        }
+        GymLogger.i(TAG, "═══════════════════════════════════════════════════")
+
+        return previews
     }
 
     // ── Step 2: Import selected exercises (uses YouTube quota) ────────────────
