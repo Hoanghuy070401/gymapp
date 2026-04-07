@@ -3,7 +3,7 @@ package com.gym.app
 import android.app.Application
 import android.util.Log
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import com.gym.app.BuildConfig
+import com.gym.feature.home.BuildConfig
 import dagger.hilt.android.HiltAndroidApp
 import timber.log.Timber
 

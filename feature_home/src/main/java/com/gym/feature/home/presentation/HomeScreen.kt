@@ -154,10 +154,10 @@ fun HomeScreen(
                         )
                     }
                 }
-            }  // end LazyColumn
-        }  // end PullToRefreshBox
-    }  // end HomeScreen
-}  // end fun HomeScreen block
+            }  // end else
+        }  // end LazyColumn
+    }  // end PullToRefreshBox
+}  // end HomeScreen
 
 // ─── Header ────────────────────────────────────────────────────────────────
 

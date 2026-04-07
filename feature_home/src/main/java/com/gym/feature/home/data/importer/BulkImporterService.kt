@@ -4,6 +4,9 @@ import com.gym.core.base.GymLogger
 import com.gym.feature.home.BuildConfig
 import com.gym.feature.home.data.VideoRepository
 import kotlinx.coroutines.delay
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.HttpException
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Inject
@@ -45,8 +48,17 @@ class BulkImporterService @Inject constructor(
     }
 
     private val youtubeApi: YoutubeApiService by lazy {
+        val logging = HttpLoggingInterceptor { msg ->
+            GymLogger.d(TAG, "[HTTP] $msg")
+        }.apply { level = HttpLoggingInterceptor.Level.BODY }
+
+        val client = OkHttpClient.Builder()
+            .addInterceptor(logging)
+            .build()
+
         Retrofit.Builder()
             .baseUrl("https://www.googleapis.com/youtube/v3/")
+            .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(YoutubeApiService::class.java)
@@ -139,7 +151,8 @@ class BulkImporterService @Inject constructor(
         val errorMessages = mutableListOf<String>()
 
         val total = exercises.size
-        GymLogger.i(TAG, "Import starting: $total exercises selected")
+        val keyPreview = if (apiKey.length > 8) "${apiKey.take(8)}...${apiKey.takeLast(4)}" else "[EMPTY]"
+        GymLogger.i(TAG, "Import starting: $total exercises | apiKey=$keyPreview (len=${apiKey.length})")
 
         exercises.forEachIndexed { index, exercise ->
             val name = exercise.englishName
@@ -205,6 +218,21 @@ class BulkImporterService @Inject constructor(
                 GymLogger.i(TAG, "Imported '$name' (${video.id})")
                 imported++
 
+            } catch (e: HttpException) {
+                val msg = when (e.code()) {
+                    403 -> "[$name] HTTP 403 — API key bị từ chối. Kiểm tra: (1) YouTube Data API v3 đã Enable chưa, (2) API key restrictions (package/SHA1), (3) Quota exceeded"
+                    400 -> "[$name] HTTP 400 — Bad request: ${e.message()}"
+                    429 -> "[$name] HTTP 429 — Quota exceeded. Dừng import, thử lại sau 24h"
+                    else -> "[$name] HTTP ${e.code()}: ${e.message()}"
+                }
+                GymLogger.e(TAG, e, "HTTP ${e.code()} importing '$name'")
+                errorMessages += msg
+                errors++
+                // Stop all imports if 403/429 (systematic failure)
+                if (e.code() == 403 || e.code() == 429) {
+                    GymLogger.e(TAG, "Systematic API error (${e.code()}) — aborting remaining imports")
+                    return@forEachIndexed
+                }
             } catch (e: Exception) {
                 val msg = "[$name] ${e.javaClass.simpleName}: ${e.message?.take(80) ?: "Unknown error"}"
                 GymLogger.e(TAG, e, "Error importing '$name'")

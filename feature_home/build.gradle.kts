@@ -69,4 +69,5 @@ dependencies {
     // Retrofit (WGER + YouTube Data API)
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
+    implementation(libs.okhttp.logging)
 }

@@ -19,7 +19,7 @@ MERGED from [androidx.navigation:navigation-common-ktx:2.7.7] /Users/nguyenhuy/.
 MERGED from [androidx.navigation:navigation-runtime-ktx:2.7.7] /Users/nguyenhuy/.gradle/caches/transforms-4/d53ab07ae308fbb08b0e24c5177f07a8/transformed/navigation-runtime-ktx-2.7.7/AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.navigation:navigation-compose:2.7.7] /Users/nguyenhuy/.gradle/caches/transforms-4/4422540f802112e113ecffa193dc3032/transformed/navigation-compose-2.7.7/AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.compose.ui:ui-tooling-android:1.7.8] /Users/nguyenhuy/.gradle/caches/transforms-4/168a2ecbfe8a30818c1fdeebdcb5434c/transformed/ui-tooling-release/AndroidManifest.xml:17:1-28:12
-MERGED from [androidx.compose.material3:material3-android:1.2.0] /Users/nguyenhuy/.gradle/caches/transforms-4/7f2b2e8c817b71e4bef73ee252610a76/transformed/material3-release/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.compose.material3:material3-android:1.3.1] /Users/nguyenhuy/.gradle/caches/transforms-4/8606cc4acff9c5d973d9ee76d39cee4f/transformed/material3-release/AndroidManifest.xml:17:1-22:12
 MERGED from [com.google.dagger:hilt-android:2.51.1] /Users/nguyenhuy/.gradle/caches/transforms-4/158990fd5e9e1e0c4ce5d52014cace83/transformed/hilt-android-2.51.1/AndroidManifest.xml:16:1-19:12
 MERGED from [com.google.android.libraries.identity.googleid:googleid:1.1.1] /Users/nguyenhuy/.gradle/caches/transforms-4/82c72a058f004a50203e96bf7a9bbf39/transformed/googleid-1.1.1/AndroidManifest.xml:2:1-7:12
 MERGED from [com.google.firebase:firebase-auth-ktx:23.0.0] /Users/nguyenhuy/.gradle/caches/transforms-4/c3b4be551dc1ad6cc4c7239ade82d35e/transformed/firebase-auth-ktx-23.0.0/AndroidManifest.xml:2:1-17:12
@@ -65,8 +65,6 @@ MERGED from [com.pierfrancescosoffritti.androidyoutubeplayer:core:12.1.0] /Users
 MERGED from [androidx.legacy:legacy-support-core-utils:1.0.0] /Users/nguyenhuy/.gradle/caches/transforms-4/bcb9e4ebf699bd1171e15768f7e14ebf/transformed/legacy-support-core-utils-1.0.0/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.loader:loader:1.1.0] /Users/nguyenhuy/.gradle/caches/transforms-4/5bfd5eb693e8004c01d3b1f2d97e7fe4/transformed/loader-1.1.0/AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.savedstate:savedstate-ktx:1.2.1] /Users/nguyenhuy/.gradle/caches/transforms-4/64b4fece6d573cc669d2a4fee9a3a179/transformed/savedstate-ktx-1.2.1/AndroidManifest.xml:17:1-22:12
-MERGED from [androidx.compose.material:material-ripple-android:1.6.0] /Users/nguyenhuy/.gradle/caches/transforms-4/4660c33181abbff439c79f42919c76a1/transformed/material-ripple-release/AndroidManifest.xml:2:1-7:12
-MERGED from [androidx.compose.material:material-android:1.6.0] /Users/nguyenhuy/.gradle/caches/transforms-4/c4a0ea29121503a26b671400d7b806d9/transformed/material-release/AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.savedstate:savedstate:1.2.1] /Users/nguyenhuy/.gradle/caches/transforms-4/2d0f4ed94a5d77fd1be091652b397823/transformed/savedstate-1.2.1/AndroidManifest.xml:17:1-22:12
 MERGED from [io.coil-kt:coil-compose:2.7.0] /Users/nguyenhuy/.gradle/caches/transforms-4/d6baa59b4afc2cc2ca2bbf6d57a4ed2c/transformed/coil-compose-2.7.0/AndroidManifest.xml:2:1-7:12
 MERGED from [io.coil-kt:coil-compose-base:2.7.0] /Users/nguyenhuy/.gradle/caches/transforms-4/221dc4434f6b73d568d0874fea69eb25/transformed/coil-compose-base-2.7.0/AndroidManifest.xml:2:1-7:12
@@ -76,6 +74,8 @@ MERGED from [androidx.recyclerview:recyclerview:1.2.1] /Users/nguyenhuy/.gradle/
 MERGED from [androidx.autofill:autofill:1.0.0] /Users/nguyenhuy/.gradle/caches/transforms-4/4b96d97e1273fe3c4bee6fbeba87f61d/transformed/autofill-1.0.0/AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.viewpager:viewpager:1.0.0] /Users/nguyenhuy/.gradle/caches/transforms-4/10467cc43af94fff108ffa1fd7f1e143/transformed/viewpager-1.0.0/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.customview:customview:1.0.0] /Users/nguyenhuy/.gradle/caches/transforms-4/1d72ef801a2063ef628a9e3996ef01f9/transformed/customview-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.compose.material:material:1.0.0] /Users/nguyenhuy/.gradle/caches/transforms-4/486e1d763fe9177e4f98b5ab692f9102/transformed/material-1.0.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.compose.material:material-ripple-android:1.7.0] /Users/nguyenhuy/.gradle/caches/transforms-4/bb605eba4b96a2fdfc8c503db1075c40/transformed/material-ripple-release/AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.compose.foundation:foundation-layout-android:1.7.8] /Users/nguyenhuy/.gradle/caches/transforms-4/600504f39ccbd1fc483da11340e3143e/transformed/foundation-layout-release/AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.compose.foundation:foundation-android:1.7.8] /Users/nguyenhuy/.gradle/caches/transforms-4/b5bce0c2404a1d2f6415f2a5eb9f4193/transformed/foundation-release/AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.compose.animation:animation-core-android:1.7.8] /Users/nguyenhuy/.gradle/caches/transforms-4/a5a9ca823560a606cae4a95214e54005/transformed/animation-core-release/AndroidManifest.xml:2:1-7:12
@@ -335,8 +335,8 @@ MERGED from [androidx.navigation:navigation-compose:2.7.7] /Users/nguyenhuy/.gra
 MERGED from [androidx.navigation:navigation-compose:2.7.7] /Users/nguyenhuy/.gradle/caches/transforms-4/4422540f802112e113ecffa193dc3032/transformed/navigation-compose-2.7.7/AndroidManifest.xml:5:5-44
 MERGED from [androidx.compose.ui:ui-tooling-android:1.7.8] /Users/nguyenhuy/.gradle/caches/transforms-4/168a2ecbfe8a30818c1fdeebdcb5434c/transformed/ui-tooling-release/AndroidManifest.xml:20:5-44
 MERGED from [androidx.compose.ui:ui-tooling-android:1.7.8] /Users/nguyenhuy/.gradle/caches/transforms-4/168a2ecbfe8a30818c1fdeebdcb5434c/transformed/ui-tooling-release/AndroidManifest.xml:20:5-44
-MERGED from [androidx.compose.material3:material3-android:1.2.0] /Users/nguyenhuy/.gradle/caches/transforms-4/7f2b2e8c817b71e4bef73ee252610a76/transformed/material3-release/AndroidManifest.xml:20:5-44
-MERGED from [androidx.compose.material3:material3-android:1.2.0] /Users/nguyenhuy/.gradle/caches/transforms-4/7f2b2e8c817b71e4bef73ee252610a76/transformed/material3-release/AndroidManifest.xml:20:5-44
+MERGED from [androidx.compose.material3:material3-android:1.3.1] /Users/nguyenhuy/.gradle/caches/transforms-4/8606cc4acff9c5d973d9ee76d39cee4f/transformed/material3-release/AndroidManifest.xml:20:5-44
+MERGED from [androidx.compose.material3:material3-android:1.3.1] /Users/nguyenhuy/.gradle/caches/transforms-4/8606cc4acff9c5d973d9ee76d39cee4f/transformed/material3-release/AndroidManifest.xml:20:5-44
 MERGED from [com.google.dagger:hilt-android:2.51.1] /Users/nguyenhuy/.gradle/caches/transforms-4/158990fd5e9e1e0c4ce5d52014cace83/transformed/hilt-android-2.51.1/AndroidManifest.xml:18:3-42
 MERGED from [com.google.dagger:hilt-android:2.51.1] /Users/nguyenhuy/.gradle/caches/transforms-4/158990fd5e9e1e0c4ce5d52014cace83/transformed/hilt-android-2.51.1/AndroidManifest.xml:18:3-42
 MERGED from [com.google.android.libraries.identity.googleid:googleid:1.1.1] /Users/nguyenhuy/.gradle/caches/transforms-4/82c72a058f004a50203e96bf7a9bbf39/transformed/googleid-1.1.1/AndroidManifest.xml:5:5-44
@@ -427,10 +427,6 @@ MERGED from [androidx.loader:loader:1.1.0] /Users/nguyenhuy/.gradle/caches/trans
 MERGED from [androidx.loader:loader:1.1.0] /Users/nguyenhuy/.gradle/caches/transforms-4/5bfd5eb693e8004c01d3b1f2d97e7fe4/transformed/loader-1.1.0/AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.savedstate:savedstate-ktx:1.2.1] /Users/nguyenhuy/.gradle/caches/transforms-4/64b4fece6d573cc669d2a4fee9a3a179/transformed/savedstate-ktx-1.2.1/AndroidManifest.xml:20:5-44
 MERGED from [androidx.savedstate:savedstate-ktx:1.2.1] /Users/nguyenhuy/.gradle/caches/transforms-4/64b4fece6d573cc669d2a4fee9a3a179/transformed/savedstate-ktx-1.2.1/AndroidManifest.xml:20:5-44
-MERGED from [androidx.compose.material:material-ripple-android:1.6.0] /Users/nguyenhuy/.gradle/caches/transforms-4/4660c33181abbff439c79f42919c76a1/transformed/material-ripple-release/AndroidManifest.xml:5:5-44
-MERGED from [androidx.compose.material:material-ripple-android:1.6.0] /Users/nguyenhuy/.gradle/caches/transforms-4/4660c33181abbff439c79f42919c76a1/transformed/material-ripple-release/AndroidManifest.xml:5:5-44
-MERGED from [androidx.compose.material:material-android:1.6.0] /Users/nguyenhuy/.gradle/caches/transforms-4/c4a0ea29121503a26b671400d7b806d9/transformed/material-release/AndroidManifest.xml:5:5-44
-MERGED from [androidx.compose.material:material-android:1.6.0] /Users/nguyenhuy/.gradle/caches/transforms-4/c4a0ea29121503a26b671400d7b806d9/transformed/material-release/AndroidManifest.xml:5:5-44
 MERGED from [androidx.savedstate:savedstate:1.2.1] /Users/nguyenhuy/.gradle/caches/transforms-4/2d0f4ed94a5d77fd1be091652b397823/transformed/savedstate-1.2.1/AndroidManifest.xml:20:5-44
 MERGED from [androidx.savedstate:savedstate:1.2.1] /Users/nguyenhuy/.gradle/caches/transforms-4/2d0f4ed94a5d77fd1be091652b397823/transformed/savedstate-1.2.1/AndroidManifest.xml:20:5-44
 MERGED from [io.coil-kt:coil-compose:2.7.0] /Users/nguyenhuy/.gradle/caches/transforms-4/d6baa59b4afc2cc2ca2bbf6d57a4ed2c/transformed/coil-compose-2.7.0/AndroidManifest.xml:5:5-44
@@ -449,6 +445,10 @@ MERGED from [androidx.viewpager:viewpager:1.0.0] /Users/nguyenhuy/.gradle/caches
 MERGED from [androidx.viewpager:viewpager:1.0.0] /Users/nguyenhuy/.gradle/caches/transforms-4/10467cc43af94fff108ffa1fd7f1e143/transformed/viewpager-1.0.0/AndroidManifest.xml:20:5-44
 MERGED from [androidx.customview:customview:1.0.0] /Users/nguyenhuy/.gradle/caches/transforms-4/1d72ef801a2063ef628a9e3996ef01f9/transformed/customview-1.0.0/AndroidManifest.xml:20:5-44
 MERGED from [androidx.customview:customview:1.0.0] /Users/nguyenhuy/.gradle/caches/transforms-4/1d72ef801a2063ef628a9e3996ef01f9/transformed/customview-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.compose.material:material:1.0.0] /Users/nguyenhuy/.gradle/caches/transforms-4/486e1d763fe9177e4f98b5ab692f9102/transformed/material-1.0.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.compose.material:material:1.0.0] /Users/nguyenhuy/.gradle/caches/transforms-4/486e1d763fe9177e4f98b5ab692f9102/transformed/material-1.0.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.compose.material:material-ripple-android:1.7.0] /Users/nguyenhuy/.gradle/caches/transforms-4/bb605eba4b96a2fdfc8c503db1075c40/transformed/material-ripple-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.material:material-ripple-android:1.7.0] /Users/nguyenhuy/.gradle/caches/transforms-4/bb605eba4b96a2fdfc8c503db1075c40/transformed/material-ripple-release/AndroidManifest.xml:5:5-44
 MERGED from [androidx.compose.foundation:foundation-layout-android:1.7.8] /Users/nguyenhuy/.gradle/caches/transforms-4/600504f39ccbd1fc483da11340e3143e/transformed/foundation-layout-release/AndroidManifest.xml:5:5-44
 MERGED from [androidx.compose.foundation:foundation-layout-android:1.7.8] /Users/nguyenhuy/.gradle/caches/transforms-4/600504f39ccbd1fc483da11340e3143e/transformed/foundation-layout-release/AndroidManifest.xml:5:5-44
 MERGED from [androidx.compose.foundation:foundation-android:1.7.8] /Users/nguyenhuy/.gradle/caches/transforms-4/b5bce0c2404a1d2f6415f2a5eb9f4193/transformed/foundation-release/AndroidManifest.xml:5:5-44
