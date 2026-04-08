@@ -235,7 +235,7 @@ class BulkImporterService @Inject constructor(
                     targetBMIs = targetBMIs
                 )
 
-                GymLogger.i(TAG, "Imported '$name' (${video.id})")
+                GymLogger.i(TAG, "Imported '$name' → $youtubeUrl")
                 imported++
 
             } catch (e: HttpException) {
