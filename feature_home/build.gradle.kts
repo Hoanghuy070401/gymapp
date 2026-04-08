@@ -13,7 +13,12 @@ android {
         minSdk = 26
 
         // Read YouTube API key from local.properties (never commit the key)
-        val youtubeApiKey = project.findProperty("YOUTUBE_API_KEY") as? String ?: ""
+        val localProps = java.util.Properties()
+        val localPropsFile = rootProject.file("local.properties")
+        if (localPropsFile.exists()) {
+            localProps.load(localPropsFile.inputStream())
+        }
+        val youtubeApiKey = localProps.getProperty("YOUTUBE_API_KEY") ?: ""
         buildConfigField("String", "YOUTUBE_API_KEY", "\"$youtubeApiKey\"")
     }
     compileOptions {
