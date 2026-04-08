@@ -80,7 +80,7 @@ fun YouTubePlayerComposable(
 
             override fun onError(youTubePlayer: YouTubePlayer, error: PlayerConstants.PlayerError) {
                 // If anything fails inside the iframe (Error 150, 152, API error, etc.)
-                GymLogger.e("YouTubePlayer", null, "YouTubePlayer Error: \$error")
+                GymLogger.e("YouTubePlayer", Exception(error.toString()), "YouTubePlayer Error: \$error")
                 hasError = true
             }
         }
