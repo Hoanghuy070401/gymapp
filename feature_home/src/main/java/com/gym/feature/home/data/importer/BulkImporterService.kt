@@ -52,7 +52,16 @@ class BulkImporterService @Inject constructor(
             GymLogger.d(TAG, "[HTTP] $msg")
         }.apply { level = HttpLoggingInterceptor.Level.BODY }
 
+        val androidRestrictionInterceptor = okhttp3.Interceptor { chain ->
+            val request = chain.request().newBuilder()
+                .addHeader("X-Android-Package", "com.gym.app")
+                .addHeader("X-Android-Cert", "76:C4:27:2F:93:6B:33:AB:2C:22:5B:CB:38:55:CD:DB:BD:C3:19:34")
+                .build()
+            chain.proceed(request)
+        }
+
         val client = OkHttpClient.Builder()
+            .addInterceptor(androidRestrictionInterceptor)
             .addInterceptor(logging)
             .build()
 
