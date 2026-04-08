@@ -15,6 +15,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.res.stringResource
+import com.gym.core.R
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -84,7 +86,7 @@ private fun ExerciseLibraryTopBar(onBack: () -> Unit) {
                 .padding(8.dp)
         )
         Text(
-            text = "Giáo Trình Bài Tập",
+            text = stringResource(id = R.string.exercise_library_title),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             color = AppColors.ElectricLime
@@ -123,7 +125,7 @@ private fun ExerciseLibraryContent(
         when {
             state.isLoading -> LoadingContent()
             state.error != null -> ErrorContent(message = state.error, onRetry = onRetry)
-            state.exercises.isEmpty() -> EmptyContent("Không tìm thấy bài tập nào")
+            state.exercises.isEmpty() -> EmptyContent(stringResource(id = R.string.no_exercises_found))
             else -> ExerciseGrid(exercises = state.exercises, onExerciseClick = onExerciseClick)
         }
     }
@@ -140,7 +142,7 @@ private fun SearchBar(
     OutlinedTextField(
         value = query,
         onValueChange = onQueryChanged,
-        placeholder = { Text("Tìm bài tập...", color = AppColors.OnSurfaceVariant) },
+        placeholder = { Text(stringResource(id = R.string.search_exercises), color = AppColors.OnSurfaceVariant) },
         leadingIcon = {
             Icon(Icons.Default.Search, contentDescription = null, tint = AppColors.ElectricLime)
         },
@@ -301,7 +303,7 @@ private fun ErrorContent(message: String, onRetry: () -> Unit) {
             )
             Spacer(modifier = Modifier.height(16.dp))
             TextButton(onClick = onRetry) {
-                Text("Thử lại", color = AppColors.ElectricLime)
+                Text(stringResource(id = R.string.retry_button), color = AppColors.ElectricLime)
             }
         }
     }

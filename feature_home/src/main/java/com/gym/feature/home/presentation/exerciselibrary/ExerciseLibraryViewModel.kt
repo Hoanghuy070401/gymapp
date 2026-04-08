@@ -2,11 +2,14 @@ package com.gym.feature.home.presentation.exerciselibrary
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.gym.core.translation.TranslatorManager
 import com.gym.domain.model.ExerciseInfo
 import com.gym.feature.home.BuildConfig
 import com.gym.feature.home.data.exercisedb.ExerciseRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -18,13 +21,15 @@ data class ExerciseLibraryState(
     val selectedBodyPart: String = "all",
     val searchQuery: String = "",
     val error: String? = null,
-    val noApiKey: Boolean = false
+    val noApiKey: Boolean = false,
+    val isTranslating: Boolean = false
 )
 
 @OptIn(FlowPreview::class)
 @HiltViewModel
 class ExerciseLibraryViewModel @Inject constructor(
-    private val repository: ExerciseRepository
+    private val repository: ExerciseRepository,
+    private val translatorManager: TranslatorManager
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ExerciseLibraryState())
@@ -38,8 +43,13 @@ class ExerciseLibraryViewModel @Inject constructor(
         if (apiKey.isBlank()) {
             _state.update { it.copy(noApiKey = true) }
         } else {
-            loadBodyParts()
-            loadExercises()
+            // Khởi chạy tải model dịch thuât ngầm trước khi load
+            viewModelScope.launch {
+                _state.update { it.copy(isTranslating = true) }
+                translatorManager.downloadModelIfNeeded()
+                loadBodyParts()
+                loadExercises()
+            }
         }
 
         // Debounced search (500ms)
@@ -67,10 +77,30 @@ class ExerciseLibraryViewModel @Inject constructor(
         loadExercises(_state.value.selectedBodyPart)
     }
 
+    private suspend fun translateExercises(list: List<ExerciseInfo>): List<ExerciseInfo> {
+        if (!translatorManager.isModelDownloaded) return list
+        
+        // Translate parallelly for speed
+        val jobs = list.map { ex ->
+            viewModelScope.async {
+                ex.copy(
+                    name = translatorManager.translate(ex.name),
+                    bodyPart = translatorManager.translate(ex.bodyPart),
+                    equipment = translatorManager.translate(ex.equipment),
+                    target = translatorManager.translate(ex.target),
+                    secondaryMuscles = translatorManager.translateList(ex.secondaryMuscles),
+                    instructions = translatorManager.translateList(ex.instructions)
+                )
+            }
+        }
+        return jobs.awaitAll()
+    }
+
     private fun loadBodyParts() {
         viewModelScope.launch {
             repository.getBodyPartList(apiKey).onSuccess { parts ->
-                _state.update { it.copy(bodyParts = listOf("all") + parts) }
+                val trParts = parts.map { async { translatorManager.translate(it) } }.awaitAll()
+                _state.update { it.copy(bodyParts = listOf("all") + trParts) }
             }
         }
     }

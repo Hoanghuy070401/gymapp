@@ -10,6 +10,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.res.stringResource
+import com.gym.core.R
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -66,7 +68,7 @@ fun ExerciseDetailScreen(
                     .padding(8.dp)
             )
             Text(
-                text = "Chi Tiết Bài Tập",
+                text = stringResource(id = R.string.exercise_detail_title),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = AppColors.ElectricLime
@@ -124,7 +126,7 @@ fun ExerciseDetailScreen(
                 // Secondary muscles
                 if (exercise.secondaryMuscles.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(AppSpacing.Large))
-                    SectionTitle("Cơ Phụ Tham Gia")
+                    SectionTitle(stringResource(id = R.string.secondary_muscles_title))
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         exercise.secondaryMuscles.forEach { muscle ->
@@ -136,7 +138,7 @@ fun ExerciseDetailScreen(
                 // Instructions
                 if (exercise.instructions.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(AppSpacing.Large))
-                    SectionTitle("Hướng Dẫn Thực Hiện")
+                    SectionTitle(stringResource(id = R.string.instructions_title))
                     Spacer(modifier = Modifier.height(8.dp))
                     exercise.instructions.forEachIndexed { index, step ->
                         InstructionStep(number = index + 1, text = step)

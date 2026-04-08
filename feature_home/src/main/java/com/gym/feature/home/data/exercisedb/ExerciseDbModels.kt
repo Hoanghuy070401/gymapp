@@ -7,13 +7,13 @@ import com.google.gson.annotations.SerializedName
 // Headers: X-RapidAPI-Key, X-RapidAPI-Host: exercisedb.p.rapidapi.com
 
 data class ExerciseDbItem(
-    val id: String,
-    val name: String,
-    val bodyPart: String,
-    val target: String,
-    val equipment: String,
-    val gifUrl: String,
+    val id: String?,
+    val name: String?,
+    val bodyPart: String?,
+    val target: String?,
+    val equipment: String?,
+    val gifUrl: String?,
     @SerializedName("secondaryMuscles")
-    val secondaryMuscles: List<String> = emptyList(),
-    val instructions: List<String> = emptyList()
+    val secondaryMuscles: List<String>? = emptyList(),
+    val instructions: List<String>? = emptyList()
 )

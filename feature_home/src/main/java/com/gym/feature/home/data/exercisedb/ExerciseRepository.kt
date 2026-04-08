@@ -40,7 +40,7 @@ class ExerciseRepository @Inject constructor() {
         offset: Int = 0
     ): Result<List<ExerciseInfo>> = runCatching {
         api.getExercises(apiKey = apiKey, limit = limit, offset = offset)
-            .map { it.toDomain() }
+            .map { it.toDomain(apiKey) }
     }.onFailure { e ->
         GymLogger.e(TAG, e, "getExercises failed offset=$offset")
     }
@@ -53,7 +53,7 @@ class ExerciseRepository @Inject constructor() {
         offset: Int = 0
     ): Result<List<ExerciseInfo>> = runCatching {
         api.getExercisesByBodyPart(apiKey = apiKey, bodyPart = bodyPart, limit = limit, offset = offset)
-            .map { it.toDomain() }
+            .map { it.toDomain(apiKey) }
     }.onFailure { e ->
         GymLogger.e(TAG, e, "getExercisesByBodyPart failed bodyPart=$bodyPart")
     }
@@ -65,7 +65,7 @@ class ExerciseRepository @Inject constructor() {
         limit: Int = 20
     ): Result<List<ExerciseInfo>> = runCatching {
         api.searchByName(apiKey = apiKey, name = name.lowercase(), limit = limit)
-            .map { it.toDomain() }
+            .map { it.toDomain(apiKey) }
     }.onFailure { e ->
         GymLogger.e(TAG, e, "searchByName failed name=$name")
     }
@@ -75,7 +75,7 @@ class ExerciseRepository @Inject constructor() {
         apiKey: String,
         id: String
     ): Result<ExerciseInfo> = runCatching {
-        api.getExerciseById(apiKey = apiKey, id = id).toDomain()
+        api.getExerciseById(apiKey = apiKey, id = id).toDomain(apiKey)
     }.onFailure { e ->
         GymLogger.e(TAG, e, "getExerciseById failed id=$id")
     }
@@ -87,15 +87,15 @@ class ExerciseRepository @Inject constructor() {
         GymLogger.e(TAG, e, "getBodyPartList failed")
     }
 
-    private fun ExerciseDbItem.toDomain() = ExerciseInfo(
-        id = id,
-        name = name.replaceFirstChar { it.uppercase() },
-        bodyPart = bodyPart,
-        target = target,
-        equipment = equipment,
-        gifUrl = gifUrl,
-        secondaryMuscles = secondaryMuscles,
-        instructions = instructions
+    private fun ExerciseDbItem.toDomain(apiKey: String) = ExerciseInfo(
+        id = id ?: "",
+        name = (name ?: "").replaceFirstChar { it.uppercase() },
+        bodyPart = bodyPart ?: "",
+        target = target ?: "",
+        equipment = equipment ?: "",
+        gifUrl = "https://exercisedb.p.rapidapi.com/image?exerciseId=$id&resolution=180&rapidapi-key=$apiKey",
+        secondaryMuscles = secondaryMuscles ?: emptyList(),
+        instructions = instructions ?: emptyList()
     )
 
     companion object {
