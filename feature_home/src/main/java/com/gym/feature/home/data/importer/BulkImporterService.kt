@@ -18,6 +18,7 @@ data class ImportResult(
     val imported: Int,
     val skippedNotEmbeddable: Int,
     val skippedNoVideo: Int,
+    val skippedShorts: Int = 0,
     val errors: Int,
     val errorMessages: List<String> = emptyList()  // per-exercise error details
 )
@@ -158,6 +159,7 @@ class BulkImporterService @Inject constructor(
         var imported = 0
         var skippedNotEmbeddable = 0
         var skippedNoVideo = 0
+        var skippedShorts = 0
         var errors = 0
         val errorMessages = mutableListOf<String>()
 
@@ -220,7 +222,15 @@ class BulkImporterService @Inject constructor(
                         return@forEachIndexed
                     }
 
-                    val video = safeVideos.first()
+                    // ── Filter out YouTube Shorts (Option C: tag OR duration < 60s) ──
+                    val nonShorts = safeVideos.filter { !it.isShorts }
+                    if (nonShorts.isEmpty()) {
+                        GymLogger.w(TAG, "All embeddable results for '$name' are Shorts — skipping")
+                        skippedShorts++
+                        return@forEachIndexed
+                    }
+
+                    val video = nonShorts.first()
                     youtubeUrl = "https://www.youtube.com/watch?v=${video.id}"
                     videoTitle = video.snippet.title
                     videoDescription = exercise.englishDescription.ifBlank { video.snippet.description.take(200) }
@@ -272,7 +282,14 @@ class BulkImporterService @Inject constructor(
             delay(300L) // throttle
         }
 
-        val result = ImportResult(imported, skippedNotEmbeddable, skippedNoVideo, errors, errorMessages)
+        val result = ImportResult(
+            imported = imported,
+            skippedNotEmbeddable = skippedNotEmbeddable,
+            skippedNoVideo = skippedNoVideo,
+            skippedShorts = skippedShorts,
+            errors = errors,
+            errorMessages = errorMessages
+        )
         GymLogger.i(TAG, "Import done: $result")
         return result
     }

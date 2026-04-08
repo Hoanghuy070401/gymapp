@@ -64,3 +64,33 @@ private fun parseDurationMinutes(isoDuration: String): Int {
         0
     }
 }
+
+/** Parse ISO 8601 duration string to total seconds. e.g. "PT45S" → 45, "PT1M5S" → 65 */
+fun parseDurationSeconds(isoDuration: String): Int {
+    return try {
+        val hours = Regex("(\\d+)H").find(isoDuration)?.groupValues?.get(1)?.toInt() ?: 0
+        val minutes = Regex("(\\d+)M").find(isoDuration)?.groupValues?.get(1)?.toInt() ?: 0
+        val seconds = Regex("(\\d+)S").find(isoDuration)?.groupValues?.get(1)?.toInt() ?: 0
+        hours * 3600 + minutes * 60 + seconds
+    } catch (e: Exception) {
+        Int.MAX_VALUE  // parse fail → assume valid (don't block)
+    }
+}
+
+private val SHORTS_REGEX = Regex("#shorts", RegexOption.IGNORE_CASE)
+
+/**
+ * Returns true if this video is a YouTube Short.
+ * Criteria (Option C — both checked):
+ *  1. Title or description contains "#shorts" (case-insensitive)
+ *  2. Total duration < 60 seconds
+ */
+val YoutubeVideoItem.isShorts: Boolean
+    get() {
+        val durationSeconds = parseDurationSeconds(contentDetails.duration)
+        if (durationSeconds < 60) return true
+        if (SHORTS_REGEX.containsMatchIn(snippet.title)) return true
+        if (SHORTS_REGEX.containsMatchIn(snippet.description)) return true
+        return false
+    }
+
