@@ -1,5 +1,8 @@
 package com.gym.feature.home.presentation.video
 
+import com.gym.core.base.GymLogger
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFramePlayerOptions
+
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
@@ -22,8 +25,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.gym.core.ui.theme.AppColors
-import com.gym.core.ui.theme.AppTypography
+import com.gym.core.designsystem.theme.AppColors
+import com.gym.core.designsystem.theme.AppTypography
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
@@ -62,8 +65,9 @@ fun YouTubePlayerComposable(
     DisposableEffect(videoId) {
         // Register as lifecycle observer so player pauses in background
         lifecycleOwner.lifecycle.addObserver(playerView)
+        playerView.enableAutomaticInitialization = false
 
-        playerView.addYouTubePlayerListener(object : AbstractYouTubePlayerListener() {
+        val listener = object : AbstractYouTubePlayerListener() {
             override fun onReady(youTubePlayer: YouTubePlayer) {
                 hasError = false
                 if (autoPlay) {
@@ -76,9 +80,18 @@ fun YouTubePlayerComposable(
 
             override fun onError(youTubePlayer: YouTubePlayer, error: PlayerConstants.PlayerError) {
                 // If anything fails inside the iframe (Error 150, 152, API error, etc.)
+                GymLogger.e("YouTubePlayer", null, "YouTubePlayer Error: \$error")
                 hasError = true
             }
-        })
+        }
+
+        val options = IFramePlayerOptions.Builder()
+            .controls(1)
+            // SPOOF ORIGIN to bypass "152" embed restrictions!
+            .origin("https://www.youtube.com")
+            .build()
+
+        playerView.initialize(listener, options)
 
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(playerView)
