@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
@@ -13,7 +15,7 @@ android {
         minSdk = 26
 
         // Read YouTube API key from local.properties (never commit the key)
-        val localProps = java.util.Properties()
+        val localProps = Properties()
         val localPropsFile = rootProject.file("local.properties")
         if (localPropsFile.exists()) {
             localProps.load(localPropsFile.inputStream())
