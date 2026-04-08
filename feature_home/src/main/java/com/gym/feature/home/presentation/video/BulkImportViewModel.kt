@@ -25,6 +25,7 @@ data class BulkImportUiState(
     val isFetchingList: Boolean = false,
     val exercises: List<ExercisePreview> = emptyList(),
     val selectedIds: Set<Int> = emptySet(),
+    val manualUrls: Map<Int, String> = emptyMap(),   // exerciseId → manual YouTube URL
     val fetchError: String? = null,
 
     // Phase 2: Import in-progress
@@ -112,6 +113,14 @@ class BulkImportViewModel @Inject constructor(
         _state.update { it.copy(selectedIds = emptySet()) }
     }
 
+    fun setManualUrl(exerciseId: Int, url: String) {
+        _state.update { s ->
+            val updated = s.manualUrls.toMutableMap()
+            if (url.isBlank()) updated.remove(exerciseId) else updated[exerciseId] = url.trim()
+            s.copy(manualUrls = updated)
+        }
+    }
+
     // ── Step 3: Import selected ───────────────────────────────────────────────
 
     fun importSelected() {
@@ -132,6 +141,7 @@ class BulkImportViewModel @Inject constructor(
             try {
                 val result = service.runImportSelected(
                     selectedIds = s.selectedIds,
+                    manualUrls = s.manualUrls,
                     onProgress = { current, total, msg ->
                         _state.update {
                             it.copy(
@@ -147,7 +157,8 @@ class BulkImportViewModel @Inject constructor(
                         isImporting = false,
                         result = result,
                         exercises = emptyList(),
-                        selectedIds = emptySet()
+                        selectedIds = emptySet(),
+                        manualUrls = emptyMap()
                     )
                 }
             } catch (e: Exception) {

@@ -128,6 +128,7 @@ class BulkImporterService @Inject constructor(
      */
     suspend fun runImportSelected(
         selectedIds: Set<Int>,
+        manualUrls: Map<Int, String> = emptyMap(),
         onProgress: (Int, Int, String) -> Unit = { _, _, _ -> }
     ): ImportResult {
         val toImport = cachedExercises.filter { it.id in selectedIds }
@@ -135,13 +136,14 @@ class BulkImporterService @Inject constructor(
             GymLogger.w(TAG, "runImportSelected called but no matching exercises in cache")
             return ImportResult(0, 0, 0, 0)
         }
-        return runImportInternal(toImport, onProgress)
+        return runImportInternal(toImport, manualUrls, onProgress)
     }
 
     // ── Core import pipeline ──────────────────────────────────────────────────
 
     private suspend fun runImportInternal(
         exercises: List<WgerExerciseInfo>,
+        manualUrls: Map<Int, String> = emptyMap(),
         onProgress: (Int, Int, String) -> Unit
     ): ImportResult {
         var imported = 0
@@ -153,49 +155,69 @@ class BulkImporterService @Inject constructor(
         val total = exercises.size
         val keyPreview = if (apiKey.length > 8) "${apiKey.take(8)}...${apiKey.takeLast(4)}" else "[EMPTY]"
         GymLogger.i(TAG, "Import starting: $total exercises | apiKey=$keyPreview (len=${apiKey.length})")
+        val manualCount = exercises.count { manualUrls.containsKey(it.id) }
+        GymLogger.i(TAG, "Manual URLs provided: $manualCount / $total")
 
         exercises.forEachIndexed { index, exercise ->
             val name = exercise.englishName
+            val manualUrl = manualUrls[exercise.id]?.takeIf { it.isNotBlank() }
             onProgress(index + 1, total, "Đang xử lý: $name")
 
             try {
-                // ── YouTube search ───────────────────────────────────────────
-                val searchQuery = "$name workout tutorial proper form"
-                val searchResults = youtubeApi.searchVideos(
-                    query = searchQuery,
-                    maxResults = 2,
-                    key = apiKey
-                ).items
+                // ── YouTube search (skip if manual URL provided) ─────────────
+                val youtubeUrl: String
+                val videoTitle: String
+                val videoDescription: String
+                val durationMinutes: Int
 
-                GymLogger.d(TAG, "➔ Search '$searchQuery' → ${searchResults.size} results")
-                searchResults.forEachIndexed { i, r ->
-                    GymLogger.d(TAG, "  result[$i] videoId=${r.id.videoId}")
+                if (manualUrl != null) {
+                    // ── Manual URL path ───────────────────────────────────────
+                    youtubeUrl = manualUrl
+                    videoTitle = name  // use exercise name as title
+                    videoDescription = exercise.englishDescription
+                    durationMinutes = 0  // unknown without API, can be updated later
+                    GymLogger.i(TAG, "✓ '$name' using manual URL: $manualUrl")
+                } else {
+                    // ── YouTube API path ──────────────────────────────────────
+                    val searchQuery = "$name workout tutorial proper form"
+                    val searchResults = youtubeApi.searchVideos(
+                        query = searchQuery,
+                        maxResults = 2,
+                        key = apiKey
+                    ).items
+
+                    GymLogger.d(TAG, "➔ Search '$searchQuery' → ${searchResults.size} results")
+                    searchResults.forEachIndexed { i, r ->
+                        GymLogger.d(TAG, "  result[$i] videoId=${r.id.videoId}")
+                    }
+
+                    if (searchResults.isEmpty()) {
+                        GymLogger.d(TAG, "No YouTube results for '$name'")
+                        skippedNoVideo++
+                        return@forEachIndexed
+                    }
+
+                    val videoIds = searchResults.joinToString(",") { it.id.videoId }
+                    GymLogger.d(TAG, "➔ Fetching details for videoIds=[$videoIds]")
+                    val videoDetails = youtubeApi.getVideoDetails(ids = videoIds, key = apiKey).items
+                    videoDetails.forEach { v ->
+                        GymLogger.d(TAG, "  video id=${v.id} embeddable=${v.status.embeddable} title=${v.snippet.title.take(40)}")
+                    }
+                    val safeVideos = videoDetails.filter { it.status.embeddable }
+
+                    if (safeVideos.isEmpty()) {
+                        GymLogger.d(TAG, "All videos for '$name' are non-embeddable")
+                        skippedNotEmbeddable += videoDetails.size
+                        return@forEachIndexed
+                    }
+
+                    val video = safeVideos.first()
+                    youtubeUrl = "https://www.youtube.com/watch?v=${video.id}"
+                    videoTitle = video.snippet.title
+                    videoDescription = exercise.englishDescription.ifBlank { video.snippet.description.take(200) }
+                    durationMinutes = video.durationMinutes
+                    GymLogger.i(TAG, "✔ '$name' → $youtubeUrl | title: ${videoTitle.take(50)}")
                 }
-
-                if (searchResults.isEmpty()) {
-                    GymLogger.d(TAG, "No YouTube results for '$name'")
-                    skippedNoVideo++
-                    return@forEachIndexed
-                }
-
-                // ── Embeddable check ─────────────────────────────────────────
-                val videoIds = searchResults.joinToString(",") { it.id.videoId }
-                GymLogger.d(TAG, "➔ Fetching details for videoIds=[$videoIds]")
-                val videoDetails = youtubeApi.getVideoDetails(ids = videoIds, key = apiKey).items
-                videoDetails.forEach { v ->
-                    GymLogger.d(TAG, "  video id=${v.id} embeddable=${v.status.embeddable} title=${v.snippet.title.take(40)}")
-                }
-                val safeVideos = videoDetails.filter { it.status.embeddable }
-
-                if (safeVideos.isEmpty()) {
-                    GymLogger.d(TAG, "All videos for '$name' are non-embeddable")
-                    skippedNotEmbeddable += videoDetails.size
-                    return@forEachIndexed
-                }
-
-                val video = safeVideos.first()
-                val youtubeUrl = "https://www.youtube.com/watch?v=${video.id}"
-                GymLogger.i(TAG, "✔ '$name' → $youtubeUrl | title: ${video.snippet.title.take(50)}")
 
                 // ── Auto-tag ──────────────────────────────────────────────────
                 val (targetAges, targetGoals, targetBMIs) = autoTag(exercise)
@@ -203,12 +225,10 @@ class BulkImporterService @Inject constructor(
 
                 // ── Save to Firebase ──────────────────────────────────────────
                 videoRepository.addWorkoutVideo(
-                    title = video.snippet.title,
+                    title = videoTitle,
                     youtubeUrl = youtubeUrl,
-                    description = exercise.englishDescription.ifBlank {
-                        video.snippet.description.take(200)
-                    },
-                    durationMinutes = video.durationMinutes,
+                    description = videoDescription,
+                    durationMinutes = durationMinutes,
                     level = level,
                     targetAges = targetAges,
                     targetGoals = targetGoals,

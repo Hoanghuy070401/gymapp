@@ -318,7 +318,9 @@ fun BulkImportScreen(
                     ExerciseSelectionList(
                         exercises = state.exercises,
                         selectedIds = state.selectedIds,
-                        onToggle = { viewModel.toggleSelection(it) }
+                        manualUrls = state.manualUrls,
+                        onToggle = { viewModel.toggleSelection(it) },
+                        onSetManualUrl = { id, url -> viewModel.setManualUrl(id, url) }
                     )
                 }
             }
@@ -354,7 +356,9 @@ fun BulkImportScreen(
 private fun ExerciseSelectionList(
     exercises: List<ExercisePreview>,
     selectedIds: Set<Int>,
-    onToggle: (Int) -> Unit
+    manualUrls: Map<Int, String>,
+    onToggle: (Int) -> Unit,
+    onSetManualUrl: (Int, String) -> Unit
 ) {
     val context = LocalContext.current
 
@@ -378,7 +382,9 @@ private fun ExerciseSelectionList(
             ExerciseItem(
                 exercise = exercise,
                 isSelected = exercise.id in selectedIds,
+                manualUrl = manualUrls[exercise.id] ?: "",
                 onToggle = { onToggle(exercise.id) },
+                onManualUrlChange = { url -> onSetManualUrl(exercise.id, url) },
                 onPreviewYouTube = {
                     val query = Uri.encode("${exercise.name} workout tutorial")
                     val intent = Intent(
@@ -398,13 +404,15 @@ private fun ExerciseSelectionList(
 private fun ExerciseItem(
     exercise: ExercisePreview,
     isSelected: Boolean,
+    manualUrl: String,
     onToggle: () -> Unit,
+    onManualUrlChange: (String) -> Unit,
     onPreviewYouTube: () -> Unit
 ) {
     val borderColor = if (isSelected) AppColors.ElectricLime else Color.Transparent
     val bgColor = if (isSelected) AppColors.ElectricLime.copy(alpha = 0.08f) else AppColors.SurfaceContainerHigh
 
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .clip(AppShape.Large)
@@ -414,69 +422,134 @@ private fun ExerciseItem(
                 color = borderColor,
                 shape = AppShape.Large
             )
-            .clickable(onClick = onToggle)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
     ) {
-        // Checkbox circle
-        Box(
+        // ── Main row (checkbox + info + preview button) ──────────────────────
+        Row(
             modifier = Modifier
-                .size(24.dp)
-                .clip(CircleShape)
-                .background(
-                    if (isSelected) AppColors.ElectricLime else AppColors.SurfaceContainerHigh
-                )
-                .border(1.5.dp, if (isSelected) AppColors.ElectricLime else AppColors.OnSurfaceVariant, CircleShape),
-            contentAlignment = Alignment.Center
+                .fillMaxWidth()
+                .clickable(onClick = onToggle)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            if (isSelected) {
-                Icon(
-                    Icons.Default.CheckCircle,
-                    contentDescription = null,
-                    tint = Color.Black,
-                    modifier = Modifier.size(16.dp)
-                )
+            // Checkbox circle
+            Box(
+                modifier = Modifier
+                    .size(24.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (isSelected) AppColors.ElectricLime else AppColors.SurfaceContainerHigh
+                    )
+                    .border(1.5.dp, if (isSelected) AppColors.ElectricLime else AppColors.OnSurfaceVariant, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                if (isSelected) {
+                    Icon(
+                        Icons.Default.CheckCircle,
+                        contentDescription = null,
+                        tint = Color.Black,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
             }
-        }
 
-        Spacer(Modifier.width(12.dp))
+            Spacer(Modifier.width(12.dp))
 
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                exercise.name,
-                style = AppTypography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-                color = AppColors.OnSurface,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            Spacer(Modifier.height(2.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Chip(exercise.category, AppColors.TonalLavender.copy(alpha = 0.2f), AppColors.TonalLavender)
-                Chip(exercise.level, AppColors.ElectricLime.copy(alpha = 0.12f), AppColors.ElectricLime)
-            }
-            if (exercise.muscles.isNotBlank()) {
-                Spacer(Modifier.height(2.dp))
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    "💪 ${exercise.muscles}",
-                    style = AppTypography.labelMedium,
-                    color = AppColors.OnSurfaceVariant,
+                    exercise.name,
+                    style = AppTypography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                    color = AppColors.OnSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
+                Spacer(Modifier.height(2.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Chip(exercise.category, AppColors.TonalLavender.copy(alpha = 0.2f), AppColors.TonalLavender)
+                    Chip(exercise.level, AppColors.ElectricLime.copy(alpha = 0.12f), AppColors.ElectricLime)
+                }
+                if (exercise.muscles.isNotBlank()) {
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        "💪 ${exercise.muscles}",
+                        style = AppTypography.labelMedium,
+                        color = AppColors.OnSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+
+            // YouTube preview button
+            IconButton(
+                onClick = onPreviewYouTube,
+                modifier = Modifier.size(36.dp)
+            ) {
+                Icon(
+                    Icons.Default.PlayCircle,
+                    contentDescription = "Xem video YouTube",
+                    tint = if (manualUrl.isNotBlank()) AppColors.ElectricLime else AppColors.TonalLavender,
+                    modifier = Modifier.size(24.dp)
+                )
             }
         }
 
-        // YouTube preview button
-        IconButton(
-            onClick = onPreviewYouTube,
-            modifier = Modifier.size(36.dp)
+        // ── Manual URL input (only when selected) ────────────────────────
+        AnimatedVisibility(
+            visible = isSelected,
+            enter = expandVertically() + fadeIn(),
+            exit = shrinkVertically() + fadeOut()
         ) {
-            Icon(
-                Icons.Default.PlayCircle,
-                contentDescription = "Xem video YouTube",
-                tint = AppColors.TonalLavender,
-                modifier = Modifier.size(24.dp)
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 52.dp, end = 16.dp, bottom = 12.dp)
+            ) {
+                Text(
+                    "🔗 YouTube URL (tùy chọn — bỏ trống để tự tìm)",
+                    style = AppTypography.labelMedium,
+                    color = AppColors.OnSurfaceVariant
+                )
+                Spacer(Modifier.height(4.dp))
+                OutlinedTextField(
+                    value = manualUrl,
+                    onValueChange = onManualUrlChange,
+                    placeholder = {
+                        Text(
+                            "https://youtu.be/... hoặc https://youtube.com/watch?v=...",
+                            style = AppTypography.labelMedium,
+                            color = AppColors.OnSurfaceVariant.copy(alpha = 0.5f)
+                        )
+                    },
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = AppColors.ElectricLime,
+                        unfocusedBorderColor = AppColors.SurfaceContainerHigh,
+                        focusedTextColor = AppColors.OnSurface,
+                        unfocusedTextColor = AppColors.OnSurface,
+                        cursorColor = AppColors.ElectricLime
+                    ),
+                    shape = AppShape.Medium,
+                    modifier = Modifier.fillMaxWidth(),
+                    trailingIcon = {
+                        if (manualUrl.isNotBlank()) {
+                            Icon(
+                                Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = AppColors.ElectricLime,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+                )
+                if (manualUrl.isNotBlank()) {
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        "✅ Sẽ dùng URL này, bỏ qua YouTube API",
+                        style = AppTypography.labelMedium,
+                        color = AppColors.ElectricLime
+                    )
+                }
+            }
         }
     }
 }
