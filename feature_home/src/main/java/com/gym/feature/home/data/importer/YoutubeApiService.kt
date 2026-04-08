@@ -23,8 +23,10 @@ interface YoutubeApiService {
     suspend fun searchVideos(
         @Query("q") query: String,
         @Query("type") type: String = "video",
-        @Query("maxResults") maxResults: Int = 2,
+        @Query("maxResults") maxResults: Int = 5,
         @Query("part") part: String = "id",
+        @Query("videoEmbeddable") videoEmbeddable: String = "true",
+        @Query("videoSyndicated") videoSyndicated: String = "true",
         @Query("key") key: String
     ): YoutubeSearchResponse
 
