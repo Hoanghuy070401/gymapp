@@ -21,6 +21,9 @@ import androidx.navigation.compose.rememberNavController
 import com.gym.core.designsystem.theme.AppColors
 import com.gym.feature.home.presentation.HomeScreen
 import com.gym.feature.home.presentation.HomeViewModel
+import com.gym.feature.home.presentation.exerciselibrary.ExerciseDetailScreen
+import com.gym.feature.home.presentation.exerciselibrary.ExerciseLibraryScreen
+import com.gym.feature.home.presentation.exerciselibrary.ExerciseLibraryViewModel
 import com.gym.feature.home.presentation.video.AddVideoScreen
 import com.gym.feature.home.presentation.video.BulkImportScreen
 import com.gym.feature.home.presentation.video.VideoDetailScreen
@@ -33,9 +36,7 @@ import androidx.navigation.navArgument
  * FAB on Home tab navigates to AddVideoScreen (dedicated screen, Approach A).
  */
 @Composable
-fun MainScreen(
-    onLogout: () -> Unit = {}
-) {
+fun MainScreen() {
     val innerNav = rememberNavController()
     val backStack by innerNav.currentBackStackEntryAsState()
     val currentRoute = backStack?.destination?.route ?: Screen.Home.route
@@ -44,7 +45,7 @@ fun MainScreen(
     val isTopLevel = currentRoute in setOf(
         Screen.Home.route,
         Screen.Workout.route,
-        "favorites",
+        Screen.ExerciseLibrary.route,
         "support"
     )
     val isHomeTab = currentRoute == Screen.Home.route
@@ -62,7 +63,13 @@ fun MainScreen(
                             launchSingleTop = true
                         }
                     },
-                    onNavigateToFavorites = { /* TODO: Favorites */ },
+                    onNavigateToFavorites = {
+                        innerNav.navigate(Screen.ExerciseLibrary.route) {
+                            popUpTo(Screen.Home.route) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
                     onNavigateToWorkout = {
                         innerNav.navigate(Screen.Workout.route) {
                             popUpTo(Screen.Home.route) { saveState = true }
@@ -131,6 +138,40 @@ fun MainScreen(
                 // ── Bulk Import (admin tool) ──────────────────────────────────
                 composable(Screen.BulkImport.route) {
                     BulkImportScreen(
+                        onBack = { innerNav.popBackStack() }
+                    )
+                }
+
+                // ── Exercise Library ──────────────────────────────────────────
+                composable(Screen.ExerciseLibrary.route) {
+                    val vm: ExerciseLibraryViewModel = hiltViewModel()
+                    ExerciseLibraryScreen(
+                        viewModel = vm,
+                        onNavigateToDetail = { exercise ->
+                            innerNav.currentBackStackEntry
+                                ?.savedStateHandle
+                                ?.set("selected_exercise", exercise)
+                            innerNav.navigate(Screen.ExerciseDetail.route(exercise.id))
+                        },
+                        onBack = { innerNav.popBackStack() }
+                    )
+                }
+
+                // ── Exercise Detail ───────────────────────────────────────────
+                composable(
+                    route = Screen.ExerciseDetail.route,
+                    arguments = listOf(
+                        navArgument(Screen.ExerciseDetail.ARG_EXERCISE_ID) { type = NavType.StringType }
+                    )
+                ) { backStackEntry ->
+                    val libraryEntry = remember(backStackEntry) {
+                        innerNav.getBackStackEntry(Screen.ExerciseLibrary.route)
+                    }
+                    val exercise = libraryEntry.savedStateHandle
+                        .get<com.gym.domain.model.ExerciseInfo>("selected_exercise")
+                        ?: return@composable
+                    ExerciseDetailScreen(
+                        exercise = exercise,
                         onBack = { innerNav.popBackStack() }
                     )
                 }

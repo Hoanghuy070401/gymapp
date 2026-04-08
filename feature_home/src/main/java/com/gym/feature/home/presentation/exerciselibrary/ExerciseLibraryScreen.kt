@@ -1,0 +1,337 @@
+package com.gym.feature.home.presentation.exerciselibrary
+
+import android.os.Build
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import coil.ImageLoader
+import coil.compose.AsyncImage
+import coil.decode.GifDecoder
+import coil.decode.ImageDecoderDecoder
+import coil.request.ImageRequest
+import com.gym.core.designsystem.component.EmptyContent
+import com.gym.core.designsystem.component.GymScaffold
+import com.gym.core.designsystem.component.LoadingContent
+import com.gym.core.designsystem.theme.AppColors
+import com.gym.core.designsystem.theme.AppSpacing
+import com.gym.domain.model.ExerciseInfo
+
+@Composable
+fun ExerciseLibraryScreen(
+    viewModel: ExerciseLibraryViewModel = hiltViewModel(),
+    onNavigateToDetail: (ExerciseInfo) -> Unit,
+    onBack: () -> Unit
+) {
+    val state by viewModel.state.collectAsState()
+
+    GymScaffold(scrollable = false) {
+        ExerciseLibraryTopBar(onBack = onBack)
+        when {
+            state.noApiKey -> NoApiKeyBanner()
+            else -> ExerciseLibraryContent(
+                state = state,
+                onSearchChanged = viewModel::onSearchQueryChanged,
+                onBodyPartSelected = viewModel::onBodyPartSelected,
+                onExerciseClick = onNavigateToDetail,
+                onRetry = viewModel::retry
+            )
+        }
+    }
+}
+
+// ── Top Bar ──────────────────────────────────────────────────────────────────
+
+@Composable
+private fun ExerciseLibraryTopBar(onBack: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = AppSpacing.ScreenHorizontal, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = "◀",
+            color = AppColors.ElectricLime,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .clip(CircleShape)
+                .clickable(onClick = onBack)
+                .padding(8.dp)
+        )
+        Text(
+            text = "Giáo Trình Bài Tập",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            color = AppColors.ElectricLime
+        )
+        Spacer(modifier = Modifier.width(40.dp))
+    }
+}
+
+// ── Main Content ─────────────────────────────────────────────────────────────
+
+@Composable
+private fun ExerciseLibraryContent(
+    state: ExerciseLibraryState,
+    onSearchChanged: (String) -> Unit,
+    onBodyPartSelected: (String) -> Unit,
+    onExerciseClick: (ExerciseInfo) -> Unit,
+    onRetry: () -> Unit
+) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        SearchBar(
+            query = state.searchQuery,
+            onQueryChanged = onSearchChanged,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = AppSpacing.ScreenHorizontal, vertical = 8.dp)
+        )
+
+        BodyPartChipRow(
+            bodyParts = state.bodyParts,
+            selected = state.selectedBodyPart,
+            onSelected = onBodyPartSelected
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        when {
+            state.isLoading -> LoadingContent()
+            state.error != null -> ErrorContent(message = state.error, onRetry = onRetry)
+            state.exercises.isEmpty() -> EmptyContent("Không tìm thấy bài tập nào")
+            else -> ExerciseGrid(exercises = state.exercises, onExerciseClick = onExerciseClick)
+        }
+    }
+}
+
+// ── Search Bar ───────────────────────────────────────────────────────────────
+
+@Composable
+private fun SearchBar(
+    query: String,
+    onQueryChanged: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    OutlinedTextField(
+        value = query,
+        onValueChange = onQueryChanged,
+        placeholder = { Text("Tìm bài tập...", color = AppColors.OnSurfaceVariant) },
+        leadingIcon = {
+            Icon(Icons.Default.Search, contentDescription = null, tint = AppColors.ElectricLime)
+        },
+        singleLine = true,
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = AppColors.SurfaceContainerHigh,
+            unfocusedContainerColor = AppColors.SurfaceContainerHigh,
+            focusedBorderColor = AppColors.ElectricLime,
+            unfocusedBorderColor = Color.Transparent,
+            cursorColor = AppColors.ElectricLime,
+            focusedTextColor = AppColors.OnSurface,
+            unfocusedTextColor = AppColors.OnSurface
+        ),
+        shape = RoundedCornerShape(12.dp),
+        modifier = modifier
+    )
+}
+
+// ── Body Part Chips ───────────────────────────────────────────────────────────
+
+@Composable
+private fun BodyPartChipRow(
+    bodyParts: List<String>,
+    selected: String,
+    onSelected: (String) -> Unit
+) {
+    LazyRow(
+        contentPadding = PaddingValues(horizontal = AppSpacing.ScreenHorizontal),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        items(bodyParts) { part ->
+            val isSelected = part == selected
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(if (isSelected) AppColors.ElectricLime else AppColors.SurfaceContainerHigh)
+                    .clickable { onSelected(part) }
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = part.replaceFirstChar { it.uppercase() },
+                    color = if (isSelected) AppColors.Surface else AppColors.OnSurface,
+                    fontSize = 12.sp,
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                )
+            }
+        }
+    }
+}
+
+// ── Exercise Grid ─────────────────────────────────────────────────────────────
+
+@Composable
+private fun ExerciseGrid(
+    exercises: List<ExerciseInfo>,
+    onExerciseClick: (ExerciseInfo) -> Unit
+) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        contentPadding = PaddingValues(
+            horizontal = AppSpacing.ScreenHorizontal,
+            vertical = AppSpacing.Medium
+        ),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier.fillMaxSize()
+    ) {
+        items(exercises, key = { it.id }) { exercise ->
+            ExerciseCard(exercise = exercise, onClick = { onExerciseClick(exercise) })
+        }
+    }
+}
+
+// ── Exercise Card ─────────────────────────────────────────────────────────────
+
+@Composable
+private fun ExerciseCard(
+    exercise: ExerciseInfo,
+    onClick: () -> Unit
+) {
+    val context = LocalContext.current
+    val imageLoader = remember {
+        ImageLoader.Builder(context)
+            .components {
+                if (Build.VERSION.SDK_INT >= 28) {
+                    add(ImageDecoderDecoder.Factory())
+                } else {
+                    add(GifDecoder.Factory())
+                }
+            }
+            .build()
+    }
+
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = AppColors.SurfaceContainerHigh),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+    ) {
+        Column {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(150.dp)
+                    .background(AppColors.Surface)
+            ) {
+                AsyncImage(
+                    model = ImageRequest.Builder(context)
+                        .data(exercise.gifUrl)
+                        .crossfade(true)
+                        .build(),
+                    imageLoader = imageLoader,
+                    contentDescription = exercise.name,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+            Column(modifier = Modifier.padding(10.dp)) {
+                Text(
+                    text = exercise.name,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = AppColors.OnSurface,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = exercise.bodyPart.replaceFirstChar { it.uppercase() },
+                    style = MaterialTheme.typography.labelMedium,
+                    color = AppColors.ElectricLime
+                )
+                Text(
+                    text = exercise.equipment.replaceFirstChar { it.uppercase() },
+                    style = MaterialTheme.typography.labelMedium,
+                    color = AppColors.OnSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+// ── Error Content ─────────────────────────────────────────────────────────────
+
+@Composable
+private fun ErrorContent(message: String, onRetry: () -> Unit) {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = message,
+                color = AppColors.Error,
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = AppSpacing.ScreenHorizontal)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            TextButton(onClick = onRetry) {
+                Text("Thử lại", color = AppColors.ElectricLime)
+            }
+        }
+    }
+}
+
+// ── No API Key Banner ─────────────────────────────────────────────────────────
+
+@Composable
+private fun NoApiKeyBanner() {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(AppSpacing.ScreenHorizontal)
+        ) {
+            Text(text = "🔑", fontSize = 48.sp, textAlign = TextAlign.Center)
+            Spacer(modifier = Modifier.height(AppSpacing.Medium))
+            Text(
+                text = "Cần RapidAPI Key",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = AppColors.OnSurface
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Thêm EXERCISEDB_API_KEY vào local.properties\n" +
+                        "Lấy key miễn phí tại rapidapi.com",
+                style = MaterialTheme.typography.bodySmall,
+                color = AppColors.OnSurfaceVariant,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}

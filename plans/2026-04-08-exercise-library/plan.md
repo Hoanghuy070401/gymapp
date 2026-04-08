@@ -17,9 +17,12 @@ Dựa trên phỏng vấn chiến lược với Founder, plan này giải quyế
   - ✅ Tích hợp Shorts filter vào `BulkImporterService` với counter `skippedShorts`
   - ✅ Tích hợp Shorts filter vào `YoutubeVideoValidator` với thông báo tiếng Việt
   
-- [ ] **Phase 2: R&D Khai thác nguồn API Miễn Phí (ExerciseDB)**
-  - Xin Key/Lấy thông tin từ RapidAPI cho bộ thư viện ExerciseDB hoặc chuẩn bị Firebase Backup.
-  - Phác thảo Data Model mới `ExerciseInfo(sourceType, targetMuscle, gifUrl, instructions)`.
+- [x] **Phase 2: Khai thác nguồn API Miễn Phí (ExerciseDB)** ✅ DONE 2026-04-08
+  - ✅ Cấu hình RapidAPI key qua `local.properties` cho ExerciseDB API
+  - ✅ Data Model `ExerciseInfo` trong module `domain` (implement java.io.Serializable cho Navigation)
+  - ✅ Retrofit interface `ExerciseDbApiService` và Repository trong `feature_home`
 
-- [ ] **Phase 3: Dựng luồng hiển thị (UI)**
-  - Tách giao diện làm 2 phân khu. Thiết kế thẻ bài tập động chạy tự động mà không cần IFrame Player.
+- [x] **Phase 3: Dựng luồng hiển thị (UI)** ✅ DONE 2026-04-08
+  - ✅ `ExerciseLibraryScreen` — grid GIF Coil decoder, browse body part, search debounce
+  - ✅ Navigation: Thêm tab "Library" vào `BottomNavBar`, cấu hình `NavHost` ở `MainScreen.kt`
+  - ✅ `ExerciseDetailScreen` — full width GIF animation, muscle chips, instructions

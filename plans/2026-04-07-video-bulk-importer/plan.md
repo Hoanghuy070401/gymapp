@@ -15,7 +15,7 @@ It allows administrators to fetch base exercise data from the WGER API, search f
 ### [Phase 1: API Integration & Data Retrieval](./phase-01-api-integration.md)
 - Set up WGER REST API client to fetch base exercises (name, target muscles).
 - Set up YouTube Data API v3 client (`videos.list` and `search.list`) to find HD video tutorials matching WGER exercises.
-- **Status:** IN_PROGRESS
+- **Status:** DONE
 
 ### [Phase 2: Filtering & Auto-Tagging Engine](./phase-02-filtering-tagging.md)
 - Implement `status.embeddable == true` filter to SILENTLY drop dead/restricted videos without throwing exceptions.

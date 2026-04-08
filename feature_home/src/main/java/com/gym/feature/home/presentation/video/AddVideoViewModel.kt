@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.gym.core.base.GymLogger
 import com.gym.feature.home.data.VideoRepository
 import com.gym.feature.home.data.extractYouTubeVideoId
+import com.gym.feature.home.data.importer.YoutubeVideoValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,6 +46,7 @@ data class AddVideoFormState(
 
     // Submission state
     val isSubmitting: Boolean = false,
+    val isValidating: Boolean = false,         // true while checking embeddable
 
     // Draft: tracks whether user has entered any data
     val hasDraft: Boolean = false
@@ -60,7 +62,8 @@ val AddVideoFormState.isUrlValid: Boolean
 
 @HiltViewModel
 class AddVideoViewModel @Inject constructor(
-    private val videoRepository: VideoRepository
+    private val videoRepository: VideoRepository,
+    private val youtubeValidator: YoutubeVideoValidator
 ) : ViewModel() {
 
     private val _form = MutableStateFlow(AddVideoFormState())
@@ -141,9 +144,21 @@ class AddVideoViewModel @Inject constructor(
     fun submit() {
         if (!validate()) return
         val f = _form.value
+        val videoId = f.urlVideoId ?: return
 
-        _form.update { it.copy(isSubmitting = true) }
         viewModelScope.launch {
+            // Step 1: validate embeddable
+            _form.update { it.copy(isValidating = true, isSubmitting = false) }
+            val validationError = youtubeValidator.validate(videoId)
+            if (validationError != null) {
+                GymLogger.w(TAG, "submit blocked: $validationError")
+                _form.update { it.copy(isValidating = false, urlError = validationError) }
+                _uiEvent.send(AddVideoUiEvent.Error("❌ $validationError"))
+                return@launch
+            }
+
+            // Step 2: save to Firebase
+            _form.update { it.copy(isValidating = false, isSubmitting = true) }
             try {
                 videoRepository.addWorkoutVideo(
                     title = f.title.trim(),
@@ -156,7 +171,7 @@ class AddVideoViewModel @Inject constructor(
                     targetBMIs = f.selectedBMIs.toList()
                 )
                 GymLogger.i(TAG, "submit: success")
-                _form.update { AddVideoFormState() } // clear draft on success
+                _form.update { AddVideoFormState() }
                 _uiEvent.send(AddVideoUiEvent.Success("✅ Video đã được thêm lên Firebase!"))
             } catch (e: Exception) {
                 GymLogger.e(TAG, e, "submit failed")

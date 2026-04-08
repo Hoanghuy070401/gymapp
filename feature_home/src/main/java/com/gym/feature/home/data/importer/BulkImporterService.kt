@@ -144,7 +144,7 @@ class BulkImporterService @Inject constructor(
         val toImport = cachedExercises.filter { it.id in selectedIds }
         if (toImport.isEmpty()) {
             GymLogger.w(TAG, "runImportSelected called but no matching exercises in cache")
-            return ImportResult(0, 0, 0, 0)
+            return ImportResult(0, 0, 0, 0,0,listOf())
         }
         return runImportInternal(toImport, manualUrls, onProgress)
     }

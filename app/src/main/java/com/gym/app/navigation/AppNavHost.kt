@@ -162,7 +162,7 @@ fun AppNavHost(
 
         composable(Screen.ForgotPassword.route) {
             ForgotPasswordScreen(
-                onContinue = { email ->
+                onContinue = { _ ->
                     navController.navigate(Screen.SetPassword.route)
                 },
                 onBack = { navController.popBackStack() }
@@ -171,7 +171,7 @@ fun AppNavHost(
 
         composable(Screen.SetPassword.route) {
             SetPasswordScreen(
-                onResetPassword = { password, confirm ->
+                onResetPassword = { _, _ ->
                     navController.navigate(Screen.SetFingerprint.route) {
                         popUpTo(Screen.ForgotPassword.route) { inclusive = true }
                     }

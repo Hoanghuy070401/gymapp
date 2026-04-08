@@ -9,7 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Headset
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,9 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gym.core.designsystem.theme.AppColors
-
-/**
- * Bottom navigation bar for the main app shell.
+ /* Bottom navigation bar for the main app shell.
  * Items: Home | Favorites | Workout | Support
  */
 @Composable
@@ -38,7 +36,7 @@ fun BottomNavBar(
 ) {
     val items = listOf(
         BottomNavItem("home", Screen.Home.route, Icons.Default.Home, "Home", onNavigateToHome),
-        BottomNavItem("favorites", "favorites", Icons.Default.Star, "Favorites", onNavigateToFavorites),
+        BottomNavItem("library", Screen.ExerciseLibrary.route, Icons.AutoMirrored.Filled.MenuBook, "Library", onNavigateToFavorites),
         BottomNavItem("workout", Screen.Workout.route, Icons.Default.FitnessCenter, "Workout", onNavigateToWorkout),
         BottomNavItem("support", "support", Icons.Default.Headset, "Support", onNavigateToSupport)
     )

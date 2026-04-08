@@ -22,6 +22,8 @@ android {
         }
         val youtubeApiKey = localProps.getProperty("YOUTUBE_API_KEY") ?: ""
         buildConfigField("String", "YOUTUBE_API_KEY", "\"$youtubeApiKey\"")
+        val exerciseDbApiKey = localProps.getProperty("EXERCISEDB_API_KEY") ?: ""
+        buildConfigField("String", "EXERCISEDB_API_KEY", "\"$exerciseDbApiKey\"")
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -67,8 +69,9 @@ dependencies {
     implementation(libs.coroutines.android)
     implementation(libs.coroutines.play.services)
 
-    // Image loading
+    // Image loading (+ GIF support)
     implementation(libs.coil.compose)
+    implementation(libs.coil.gif)
 
     // YouTube player
     implementation(libs.android.youtube.player)

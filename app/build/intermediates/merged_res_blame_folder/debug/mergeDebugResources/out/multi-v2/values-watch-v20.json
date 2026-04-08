@@ -4,7 +4,7 @@
             "outputFile": "com.gym.app-mergeDebugResources-80:/values-watch-v20/values-watch-v20.xml",
             "map": [
                 {
-                    "source": "/Users/nguyenhuy/.gradle/caches/transforms-4/80a2411ff7785d7edd7be181c0221611/transformed/play-services-auth-21.2.0/res/values-watch-v20/values.xml",
+                    "source": "/Users/nguyenhuy/.gradle/caches/8.14/transforms/e8af3158e01a8534e1b2279f86f70532/transformed/play-services-auth-21.2.0/res/values-watch-v20/values.xml",
                     "from": {
                         "startLines": "4,5,6,7,8,9,10,11",
                         "startColumns": "0,0,0,0,0,0,0,0",
