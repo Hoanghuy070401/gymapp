@@ -68,12 +68,11 @@ fun ExerciseLibraryScreen(
 
 @Composable
 private fun ExerciseLibraryTopBar(onBack: () -> Unit) {
-    Row(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = AppSpacing.ScreenHorizontal, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+        contentAlignment = Alignment.Center
     ) {
         Text(
             text = "◀",
@@ -81,6 +80,7 @@ private fun ExerciseLibraryTopBar(onBack: () -> Unit) {
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier
+                .align(Alignment.CenterStart)
                 .clip(CircleShape)
                 .clickable(onClick = onBack)
                 .padding(8.dp)
@@ -91,7 +91,6 @@ private fun ExerciseLibraryTopBar(onBack: () -> Unit) {
             fontWeight = FontWeight.Bold,
             color = AppColors.ElectricLime
         )
-        Spacer(modifier = Modifier.width(40.dp))
     }
 }
 
@@ -270,6 +269,7 @@ private fun ExerciseCard(
                     fontWeight = FontWeight.SemiBold,
                     color = AppColors.OnSurface,
                     maxLines = 2,
+                    minLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(4.dp))
