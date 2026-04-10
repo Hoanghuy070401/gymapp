@@ -45,7 +45,6 @@ fun ExerciseLibraryScreen(
     onBack: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
-    // Singleton ImageLoader hoisted ở đây, không khởi tạo lại ở mỗi card
     val imageLoader = rememberGifImageLoader()
 
     GymScaffold(scrollable = false) {
@@ -58,7 +57,8 @@ fun ExerciseLibraryScreen(
                 onSearchChanged = viewModel::onSearchQueryChanged,
                 onBodyPartSelected = viewModel::onBodyPartSelected,
                 onExerciseClick = onNavigateToDetail,
-                onRetry = viewModel::retry
+                onRetry = viewModel::retry,
+                onTogglePersonalization = viewModel::togglePersonalization
             )
         }
     }
@@ -103,7 +103,8 @@ private fun ExerciseLibraryContent(
     onSearchChanged: (String) -> Unit,
     onBodyPartSelected: (String) -> Unit,
     onExerciseClick: (ExerciseInfo) -> Unit,
-    onRetry: () -> Unit
+    onRetry: () -> Unit,
+    onTogglePersonalization: () -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         SearchBar(
@@ -114,6 +115,56 @@ private fun ExerciseLibraryContent(
                 .padding(horizontal = AppSpacing.ScreenHorizontal, vertical = 8.dp)
         )
 
+        // Personalization chip + label
+        if (state.userProfile != null) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = AppSpacing.ScreenHorizontal, vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                FilterChip(
+                    selected = state.isPersonalized,
+                    onClick = onTogglePersonalization,
+                    label = {
+                        Text(
+                            text = if (state.isPersonalized) "🧠 Cá nhân hoá" else "🧠 Lọc theo tuổi",
+                            fontSize = 12.sp
+                        )
+                    },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = AppColors.ElectricLime,
+                        selectedLabelColor = Color.Black,
+                        containerColor = AppColors.SurfaceContainerHigh,
+                        labelColor = AppColors.OnSurfaceVariant
+                    ),
+                    border = FilterChipDefaults.filterChipBorder(
+                        enabled = true,
+                        selected = state.isPersonalized,
+                        selectedBorderColor = AppColors.ElectricLime,
+                        borderColor = AppColors.SurfaceContainerHigh
+                    )
+                )
+                if (state.isPersonalized && state.ageGroupLabel.isNotBlank()) {
+                    Text(
+                        text = state.ageGroupLabel,
+                        fontSize = 11.sp,
+                        color = AppColors.OnSurfaceVariant
+                    )
+                }
+                state.userProfile.goal.takeIf { it.isNotBlank() }?.let { goal ->
+                    if (state.isPersonalized) {
+                        Text(
+                            text = "• $goal",
+                            fontSize = 11.sp,
+                            color = AppColors.ElectricLime.copy(alpha = 0.8f)
+                        )
+                    }
+                }
+            }
+        }
+
         BodyPartChipRow(
             bodyParts = state.bodyParts,
             selected = state.selectedBodyPart,
@@ -122,7 +173,7 @@ private fun ExerciseLibraryContent(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Hiện spinner phụ khi đang dịch (ML Kit chạy nền)
+        // Spinner khi đang dịch (ML Kit chạy nền)
         if (state.isTranslating && !state.isLoading) {
             LinearProgressIndicator(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = AppSpacing.ScreenHorizontal),
