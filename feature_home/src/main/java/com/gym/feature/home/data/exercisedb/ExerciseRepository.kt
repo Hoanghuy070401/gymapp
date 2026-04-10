@@ -10,11 +10,17 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Repository for fetching exercises from ExerciseDB API.
- * Requires RapidAPI key set in local.properties as EXERCISEDB_API_KEY.
+ * Repository for exercises.
+ * Strategy: Cache-first
+ *   1. Kiểm tra Firebase (ExerciseFirebaseCache).
+ *   2. Nếu Firebase có data → trả về cache, KHÔNG gọi API.
+ *   3. Nếu Firebase trống → gọi ExerciseDB API → trả kết quả về caller.
+ *      (Admin tự quyết định có push lên Firebase không qua AdminExerciseImporter)
  */
 @Singleton
-class ExerciseRepository @Inject constructor() {
+class ExerciseRepository @Inject constructor(
+    private val cache: ExerciseFirebaseCache
+) {
 
     private val api: ExerciseDbApiService by lazy {
         val logging = HttpLoggingInterceptor { msg ->
@@ -33,59 +39,109 @@ class ExerciseRepository @Inject constructor() {
             .create(ExerciseDbApiService::class.java)
     }
 
-    /** Fetch paginated exercises — all body parts */
+    // ── Public API ────────────────────────────────────────────────────────────
+
+    /** Cache-first: all exercises */
     suspend fun getExercises(
         apiKey: String,
-        limit: Int = 20,
+        limit: Int = 30,
         offset: Int = 0
-    ): Result<List<ExerciseInfo>> = runCatching {
-        api.getExercises(apiKey = apiKey, limit = limit, offset = offset)
-            .map { it.toDomain(apiKey) }
-    }.onFailure { e ->
-        GymLogger.e(TAG, e, "getExercises failed offset=$offset")
+    ): Result<List<ExerciseInfo>> {
+        // 1. Try Firebase cache
+        val cached = cache.getAllExercises(limit)
+        if (cached.isSuccess && cached.getOrDefault(emptyList()).isNotEmpty()) {
+            GymLogger.d(TAG, "Cache HIT — all exercises (${cached.getOrNull()?.size})")
+            return cached
+        }
+        // 2. Fallback to API
+        GymLogger.d(TAG, "Cache MISS — calling API for all exercises")
+        return runCatching {
+            api.getExercises(apiKey = apiKey, limit = limit, offset = offset)
+                .map { it.toDomain(apiKey) }
+        }.onFailure { GymLogger.e(TAG, it, "getExercises API failed offset=$offset") }
     }
 
-    /** Fetch exercises filtered by body part */
+    /** Cache-first: exercises by body part */
     suspend fun getExercisesByBodyPart(
         apiKey: String,
         bodyPart: String,
-        limit: Int = 20,
+        limit: Int = 30,
         offset: Int = 0
-    ): Result<List<ExerciseInfo>> = runCatching {
-        api.getExercisesByBodyPart(apiKey = apiKey, bodyPart = bodyPart, limit = limit, offset = offset)
-            .map { it.toDomain(apiKey) }
-    }.onFailure { e ->
-        GymLogger.e(TAG, e, "getExercisesByBodyPart failed bodyPart=$bodyPart")
+    ): Result<List<ExerciseInfo>> {
+        // 1. Try Firebase cache
+        if (cache.hasBodyPart(bodyPart)) {
+            val cached = cache.getExercises(bodyPart, limit)
+            if (cached.isSuccess && cached.getOrDefault(emptyList()).isNotEmpty()) {
+                GymLogger.d(TAG, "Cache HIT — bodyPart=$bodyPart (${cached.getOrNull()?.size})")
+                return cached
+            }
+        }
+        // 2. Fallback to API
+        GymLogger.d(TAG, "Cache MISS — calling API bodyPart=$bodyPart")
+        return runCatching {
+            api.getExercisesByBodyPart(apiKey = apiKey, bodyPart = bodyPart, limit = limit, offset = offset)
+                .map { it.toDomain(apiKey) }
+        }.onFailure { GymLogger.e(TAG, it, "getExercisesByBodyPart API failed bodyPart=$bodyPart") }
     }
 
-    /** Search exercises by name keyword */
+    /** Cache-first: search by name */
     suspend fun searchByName(
         apiKey: String,
         name: String,
         limit: Int = 20
-    ): Result<List<ExerciseInfo>> = runCatching {
-        api.searchByName(apiKey = apiKey, name = name.lowercase(), limit = limit)
-            .map { it.toDomain(apiKey) }
-    }.onFailure { e ->
-        GymLogger.e(TAG, e, "searchByName failed name=$name")
+    ): Result<List<ExerciseInfo>> {
+        // 1. Try Firebase full-text search (client-side on cached data)
+        val cached = cache.searchByName(name, limit)
+        if (cached.isSuccess && cached.getOrDefault(emptyList()).isNotEmpty()) {
+            GymLogger.d(TAG, "Cache search HIT — query=$name")
+            return cached
+        }
+        // 2. Fallback to API
+        GymLogger.d(TAG, "Cache search MISS — calling API name=$name")
+        return runCatching {
+            api.searchByName(apiKey = apiKey, name = name.lowercase(), limit = limit)
+                .map { it.toDomain(apiKey) }
+        }.onFailure { GymLogger.e(TAG, it, "searchByName API failed name=$name") }
     }
 
-    /** Fetch exercise detail by ID */
-    suspend fun getExerciseById(
+    /** Body parts: Firebase first */
+    suspend fun getBodyPartList(apiKey: String): Result<List<String>> {
+        val cached = cache.getBodyPartList()
+        if (cached.isSuccess && cached.getOrDefault(emptyList()).isNotEmpty()) {
+            GymLogger.d(TAG, "Cache HIT — body parts")
+            return cached
+        }
+        GymLogger.d(TAG, "Cache MISS — calling API for body parts")
+        return runCatching {
+            api.getBodyPartList(apiKey = apiKey)
+        }.onFailure { GymLogger.e(TAG, it, "getBodyPartList API failed") }
+    }
+
+    /** Fetch exercise detail by ID (always API — detail không cache) */
+    suspend fun getExerciseById(apiKey: String, id: String): Result<ExerciseInfo> =
+        runCatching {
+            api.getExerciseById(apiKey = apiKey, id = id).toDomain(apiKey)
+        }.onFailure { GymLogger.e(TAG, it, "getExerciseById API failed id=$id") }
+
+    // ── Admin: Direct API access (no cache) ──────────────────────────────────
+
+    /** Dành cho Admin: Fetch raw từ API để import vào Firebase */
+    suspend fun fetchRawExercisesForImport(
         apiKey: String,
-        id: String
-    ): Result<ExerciseInfo> = runCatching {
-        api.getExerciseById(apiKey = apiKey, id = id).toDomain(apiKey)
-    }.onFailure { e ->
-        GymLogger.e(TAG, e, "getExerciseById failed id=$id")
-    }
+        bodyPart: String? = null,
+        limit: Int = 100,
+        offset: Int = 0
+    ): Result<List<ExerciseInfo>> = runCatching {
+        if (bodyPart != null) {
+            api.getExercisesByBodyPart(apiKey = apiKey, bodyPart = bodyPart, limit = limit, offset = offset)
+                .map { it.toDomain(apiKey) }
+        } else {
+            api.getExercises(apiKey = apiKey, limit = limit, offset = offset)
+                .map { it.toDomain(apiKey) }
+        }
+    }.onFailure { GymLogger.e(TAG, it, "fetchRawForImport failed bodyPart=$bodyPart") }
 
-    /** Fetch available body part categories */
-    suspend fun getBodyPartList(apiKey: String): Result<List<String>> = runCatching {
-        api.getBodyPartList(apiKey = apiKey)
-    }.onFailure { e ->
-        GymLogger.e(TAG, e, "getBodyPartList failed")
-    }
+    // ── Mapper ────────────────────────────────────────────────────────────────
 
     private fun ExerciseDbItem.toDomain(apiKey: String) = ExerciseInfo(
         id = id ?: "",

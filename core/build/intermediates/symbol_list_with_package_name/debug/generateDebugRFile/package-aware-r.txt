@@ -1,10 +1,26 @@
 com.gym.core
+string cat_community
+string cat_nutrition
+string cat_progress
+string cat_workout
 string exercise_detail_title
 string exercise_library_title
+string home_articles_tips
+string home_challenge_progress
+string home_greeting_known
+string home_greeting_unknown
+string home_recommendations
+string home_see_all
+string home_subtitle
+string home_workout_videos
 string instructions_title
 string language_english
 string language_setting_title
 string language_vietnamese
+string nav_home
+string nav_library
+string nav_support
+string nav_workout
 string no_exercises_found
 string retry_button
 string search_exercises

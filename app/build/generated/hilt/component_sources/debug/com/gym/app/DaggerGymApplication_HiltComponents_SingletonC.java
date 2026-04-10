@@ -418,40 +418,40 @@ public final class DaggerGymApplication_HiltComponents_SingletonC {
 
     @IdentifierNameString
     private static final class LazyClassKeyProvider {
-      static String com_gym_feature_auth_presentation_AuthViewModel = "com.gym.feature.auth.presentation.AuthViewModel";
-
-      static String com_gym_feature_home_presentation_exerciselibrary_ExerciseLibraryViewModel = "com.gym.feature.home.presentation.exerciselibrary.ExerciseLibraryViewModel";
-
-      static String com_gym_feature_auth_presentation_setup_SetupViewModel = "com.gym.feature.auth.presentation.setup.SetupViewModel";
-
       static String com_gym_feature_home_presentation_video_BulkImportViewModel = "com.gym.feature.home.presentation.video.BulkImportViewModel";
-
-      static String com_gym_feature_home_presentation_HomeViewModel = "com.gym.feature.home.presentation.HomeViewModel";
-
-      static String com_gym_feature_home_presentation_video_AddVideoViewModel = "com.gym.feature.home.presentation.video.AddVideoViewModel";
 
       static String com_gym_feature_workout_presentation_WorkoutViewModel = "com.gym.feature.workout.presentation.WorkoutViewModel";
 
-      @KeepFieldType
-      AuthViewModel com_gym_feature_auth_presentation_AuthViewModel2;
+      static String com_gym_feature_home_presentation_exerciselibrary_ExerciseLibraryViewModel = "com.gym.feature.home.presentation.exerciselibrary.ExerciseLibraryViewModel";
 
-      @KeepFieldType
-      ExerciseLibraryViewModel com_gym_feature_home_presentation_exerciselibrary_ExerciseLibraryViewModel2;
+      static String com_gym_feature_home_presentation_HomeViewModel = "com.gym.feature.home.presentation.HomeViewModel";
 
-      @KeepFieldType
-      SetupViewModel com_gym_feature_auth_presentation_setup_SetupViewModel2;
+      static String com_gym_feature_auth_presentation_setup_SetupViewModel = "com.gym.feature.auth.presentation.setup.SetupViewModel";
+
+      static String com_gym_feature_auth_presentation_AuthViewModel = "com.gym.feature.auth.presentation.AuthViewModel";
+
+      static String com_gym_feature_home_presentation_video_AddVideoViewModel = "com.gym.feature.home.presentation.video.AddVideoViewModel";
 
       @KeepFieldType
       BulkImportViewModel com_gym_feature_home_presentation_video_BulkImportViewModel2;
 
       @KeepFieldType
+      WorkoutViewModel com_gym_feature_workout_presentation_WorkoutViewModel2;
+
+      @KeepFieldType
+      ExerciseLibraryViewModel com_gym_feature_home_presentation_exerciselibrary_ExerciseLibraryViewModel2;
+
+      @KeepFieldType
       HomeViewModel com_gym_feature_home_presentation_HomeViewModel2;
 
       @KeepFieldType
-      AddVideoViewModel com_gym_feature_home_presentation_video_AddVideoViewModel2;
+      SetupViewModel com_gym_feature_auth_presentation_setup_SetupViewModel2;
 
       @KeepFieldType
-      WorkoutViewModel com_gym_feature_workout_presentation_WorkoutViewModel2;
+      AuthViewModel com_gym_feature_auth_presentation_AuthViewModel2;
+
+      @KeepFieldType
+      AddVideoViewModel com_gym_feature_home_presentation_video_AddVideoViewModel2;
     }
   }
 
@@ -522,40 +522,40 @@ public final class DaggerGymApplication_HiltComponents_SingletonC {
 
     @IdentifierNameString
     private static final class LazyClassKeyProvider {
-      static String com_gym_feature_auth_presentation_setup_SetupViewModel = "com.gym.feature.auth.presentation.setup.SetupViewModel";
+      static String com_gym_feature_home_presentation_video_AddVideoViewModel = "com.gym.feature.home.presentation.video.AddVideoViewModel";
 
       static String com_gym_feature_home_presentation_exerciselibrary_ExerciseLibraryViewModel = "com.gym.feature.home.presentation.exerciselibrary.ExerciseLibraryViewModel";
 
-      static String com_gym_feature_home_presentation_HomeViewModel = "com.gym.feature.home.presentation.HomeViewModel";
-
       static String com_gym_feature_home_presentation_video_BulkImportViewModel = "com.gym.feature.home.presentation.video.BulkImportViewModel";
+
+      static String com_gym_feature_auth_presentation_setup_SetupViewModel = "com.gym.feature.auth.presentation.setup.SetupViewModel";
+
+      static String com_gym_feature_home_presentation_HomeViewModel = "com.gym.feature.home.presentation.HomeViewModel";
 
       static String com_gym_feature_auth_presentation_AuthViewModel = "com.gym.feature.auth.presentation.AuthViewModel";
 
       static String com_gym_feature_workout_presentation_WorkoutViewModel = "com.gym.feature.workout.presentation.WorkoutViewModel";
 
-      static String com_gym_feature_home_presentation_video_AddVideoViewModel = "com.gym.feature.home.presentation.video.AddVideoViewModel";
-
       @KeepFieldType
-      SetupViewModel com_gym_feature_auth_presentation_setup_SetupViewModel2;
+      AddVideoViewModel com_gym_feature_home_presentation_video_AddVideoViewModel2;
 
       @KeepFieldType
       ExerciseLibraryViewModel com_gym_feature_home_presentation_exerciselibrary_ExerciseLibraryViewModel2;
 
       @KeepFieldType
-      HomeViewModel com_gym_feature_home_presentation_HomeViewModel2;
+      BulkImportViewModel com_gym_feature_home_presentation_video_BulkImportViewModel2;
 
       @KeepFieldType
-      BulkImportViewModel com_gym_feature_home_presentation_video_BulkImportViewModel2;
+      SetupViewModel com_gym_feature_auth_presentation_setup_SetupViewModel2;
+
+      @KeepFieldType
+      HomeViewModel com_gym_feature_home_presentation_HomeViewModel2;
 
       @KeepFieldType
       AuthViewModel com_gym_feature_auth_presentation_AuthViewModel2;
 
       @KeepFieldType
       WorkoutViewModel com_gym_feature_workout_presentation_WorkoutViewModel2;
-
-      @KeepFieldType
-      AddVideoViewModel com_gym_feature_home_presentation_video_AddVideoViewModel2;
     }
 
     private static final class SwitchingProvider<T> implements Provider<T> {

@@ -1,11 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="cat_community">Cộng Đồng</string>
+    <string name="cat_nutrition">Dinh Dưỡng</string>
+    <string name="cat_progress">Theo Dõi\nTiến Độ</string>
+    <string name="cat_workout">Tập Luyện</string>
     <string name="exercise_detail_title">Chi Tiết Bài Tập</string>
     <string name="exercise_library_title">Giáo Trình Bài Tập</string>
+    <string name="home_articles_tips">Bài Viết &amp; Mẹo</string>
+    <string name="home_challenge_progress">%1$d / %2$d đã hoàn thành</string>
+    <string name="home_greeting_known">Chào, %1$s 👋</string>
+    <string name="home_greeting_unknown">Xin chào 👋</string>
+    <string name="home_recommendations">Đề Xuất</string>
+    <string name="home_see_all">Xem tất cả ▷</string>
+    <string name="home_subtitle">Đã đến lúc vượt qua giới hạn của bạn.</string>
+    <string name="home_workout_videos">Video Tập Luyện</string>
     <string name="instructions_title">Hướng Dẫn Thực Hiện</string>
     <string name="language_english">English</string>
     <string name="language_setting_title">Ngôn ngữ</string>
     <string name="language_vietnamese">Tiếng Việt</string>
+    <string name="nav_home">Trang Chủ</string>
+    <string name="nav_library">Thư Viện</string>
+    <string name="nav_support">Hỗ Trợ</string>
+    <string name="nav_workout">Tập Luyện</string>
     <string name="no_exercises_found">Không tìm thấy bài tập nào</string>
     <string name="retry_button">Thử lại</string>
     <string name="search_exercises">Tìm bài tập...</string>

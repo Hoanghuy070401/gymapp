@@ -21,6 +21,7 @@ import androidx.navigation.compose.rememberNavController
 import com.gym.core.designsystem.theme.AppColors
 import com.gym.feature.home.presentation.HomeScreen
 import com.gym.feature.home.presentation.HomeViewModel
+import com.gym.feature.home.presentation.admin.AdminExerciseImportScreen
 import com.gym.feature.home.presentation.exerciselibrary.ExerciseDetailScreen
 import com.gym.feature.home.presentation.exerciselibrary.ExerciseLibraryScreen
 import com.gym.feature.home.presentation.exerciselibrary.ExerciseLibraryViewModel
@@ -49,6 +50,7 @@ fun MainScreen() {
         "support"
     )
     val isHomeTab = currentRoute == Screen.Home.route
+    val isLibraryTab = currentRoute == Screen.ExerciseLibrary.route
 
     Scaffold(
         containerColor = AppColors.Surface,
@@ -82,15 +84,24 @@ fun MainScreen() {
             }
         },
         floatingActionButton = {
-            // FAB only visible on Home tab — navigates to dedicated AddVideoScreen
-            if (isHomeTab) {
-                FloatingActionButton(
+            when {
+                // Home tab: Add Video
+                isHomeTab -> FloatingActionButton(
                     onClick = { innerNav.navigate(Screen.AddVideo.route) },
                     shape = CircleShape,
                     containerColor = AppColors.TonalLavender,
                     contentColor = AppColors.Surface
                 ) {
                     Icon(Icons.Default.Add, contentDescription = "Thêm video")
+                }
+                // Library tab: Admin Import
+                isLibraryTab -> FloatingActionButton(
+                    onClick = { innerNav.navigate(Screen.AdminExerciseImport.route) },
+                    shape = CircleShape,
+                    containerColor = AppColors.ElectricLime,
+                    contentColor = AppColors.Surface
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Admin Import")
                 }
             }
         }
@@ -172,6 +183,13 @@ fun MainScreen() {
                         ?: return@composable
                     ExerciseDetailScreen(
                         exercise = exercise,
+                        onBack = { innerNav.popBackStack() }
+                    )
+                }
+
+                // ── Admin Exercise Import ─────────────────────────────────────
+                composable(Screen.AdminExerciseImport.route) {
+                    AdminExerciseImportScreen(
                         onBack = { innerNav.popBackStack() }
                     )
                 }

@@ -36,6 +36,10 @@
     <string msgid="6107532579223922871" name="call_notification_incoming_text">"Cuộc gọi đến"</string>
     <string msgid="8623827134497363134" name="call_notification_ongoing_text">"Cuộc gọi đang thực hiện"</string>
     <string msgid="59049573811482460" name="call_notification_screening_text">"Đang sàng lọc cuộc gọi đến"</string>
+    <string name="cat_community">Cộng Đồng</string>
+    <string name="cat_nutrition">Dinh Dưỡng</string>
+    <string name="cat_progress">Theo Dõi\nTiến Độ</string>
+    <string name="cat_workout">Tập Luyện</string>
     <string msgid="406453423630273620" name="close_drawer">"Đóng trình đơn điều hướng"</string>
     <string msgid="7573152094250666567" name="close_sheet">"Đóng trang tính"</string>
     <string msgid="2523291102206661146" name="common_google_play_services_enable_button">Bật</string>
@@ -65,6 +69,14 @@
     <string msgid="4566929209979330987" name="fallback_menu_item_copy_link">"Sao chép đường liên kết"</string>
     <string msgid="3413186855122069269" name="fallback_menu_item_open_in_browser">"Mở trong trình duyệt"</string>
     <string msgid="7145444925855055364" name="fallback_menu_item_share_link">"Chia sẻ liên kết"</string>
+    <string name="home_articles_tips">Bài Viết &amp; Mẹo</string>
+    <string name="home_challenge_progress">%1$d / %2$d đã hoàn thành</string>
+    <string name="home_greeting_known">Chào, %1$s 👋</string>
+    <string name="home_greeting_unknown">Xin chào 👋</string>
+    <string name="home_recommendations">Đề Xuất</string>
+    <string name="home_see_all">Xem tất cả ▷</string>
+    <string name="home_subtitle">Đã đến lúc vượt qua giới hạn của bạn.</string>
+    <string name="home_workout_videos">Video Tập Luyện</string>
     <string msgid="6827826412747255547" name="in_progress">"Đang thực hiện"</string>
     <string msgid="7933458017204019916" name="indeterminate">"Đã kiểm tra một phần"</string>
     <string name="instructions_title">Hướng Dẫn Thực Hiện</string>
@@ -128,6 +140,10 @@
     <string msgid="6616362054113087709" name="m3c_time_picker_pm">"CH"</string>
     <string msgid="1805687647081129904" name="m3c_tooltip_long_press_label">"Hiện chú giải công cụ"</string>
     <string msgid="5460405025248574620" name="m3c_tooltip_pane_description">"Chú giải công cụ"</string>
+    <string name="nav_home">Trang Chủ</string>
+    <string name="nav_library">Thư Viện</string>
+    <string name="nav_support">Hỗ Trợ</string>
+    <string name="nav_workout">Tập Luyện</string>
     <string msgid="542007171693138492" name="navigation_menu">"Trình đơn điều hướng"</string>
     <string name="no_exercises_found">Không tìm thấy bài tập nào</string>
     <string msgid="6610465462668679431" name="not_selected">"Chưa chọn"</string>

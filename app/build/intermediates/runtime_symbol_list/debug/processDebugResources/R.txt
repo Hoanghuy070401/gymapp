@@ -1041,6 +1041,10 @@ int string call_notification_hang_up_action 0x7f0e0021
 int string call_notification_incoming_text 0x7f0e0022
 int string call_notification_ongoing_text 0x7f0e0023
 int string call_notification_screening_text 0x7f0e0024
+int string cat_community 0x7f0e009d
+int string cat_nutrition 0x7f0e009e
+int string cat_progress 0x7f0e009f
+int string cat_workout 0x7f0e00a0
 int string close_drawer 0x7f0e0025
 int string close_sheet 0x7f0e0026
 int string com_google_firebase_crashlytics_mapping_file_id 0x7f0e0027
@@ -1078,6 +1082,14 @@ int string google_api_key 0x7f0e0046
 int string google_app_id 0x7f0e0047
 int string google_crash_reporting_api_key 0x7f0e0048
 int string google_storage_bucket 0x7f0e0049
+int string home_articles_tips 0x7f0e00a1
+int string home_challenge_progress 0x7f0e00a2
+int string home_greeting_known 0x7f0e00a3
+int string home_greeting_unknown 0x7f0e00a4
+int string home_recommendations 0x7f0e00a5
+int string home_see_all 0x7f0e00a6
+int string home_subtitle 0x7f0e00a7
+int string home_workout_videos 0x7f0e00a8
 int string in_progress 0x7f0e004a
 int string indeterminate 0x7f0e004b
 int string instructions_title 0x7f0e004c
@@ -1141,6 +1153,10 @@ int string m3c_time_picker_period_toggle_description 0x7f0e0085
 int string m3c_time_picker_pm 0x7f0e0086
 int string m3c_tooltip_long_press_label 0x7f0e0087
 int string m3c_tooltip_pane_description 0x7f0e0088
+int string nav_home 0x7f0e00a9
+int string nav_library 0x7f0e00aa
+int string nav_support 0x7f0e00ab
+int string nav_workout 0x7f0e00ac
 int string navigation_menu 0x7f0e0089
 int string no_exercises_found 0x7f0e008a
 int string not_selected 0x7f0e008b

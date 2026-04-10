@@ -15,6 +15,7 @@ sealed class Screen(val route: String) {
     data object AddVideo : Screen("add_video")
     data object BulkImport : Screen("bulk_import")
     data object ExerciseLibrary : Screen("exercise_library")
+    data object AdminExerciseImport : Screen("admin_exercise_import")
     data object ExerciseDetail : Screen("exercise_detail/{exerciseId}") {
         const val ARG_EXERCISE_ID = "exerciseId"
         fun route(exerciseId: String) = "exercise_detail/$exerciseId"
