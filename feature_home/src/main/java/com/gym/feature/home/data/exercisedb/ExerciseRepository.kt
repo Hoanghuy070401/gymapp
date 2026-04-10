@@ -104,7 +104,7 @@ class ExerciseRepository @Inject constructor(
         }.onFailure { GymLogger.e(TAG, it, "searchByName API failed name=$name") }
     }
 
-    /** Body parts: Firebase first */
+    /** Body parts: Firebase first, auto-cache API result */
     suspend fun getBodyPartList(apiKey: String): Result<List<String>> {
         val cached = cache.getBodyPartList()
         if (cached.isSuccess && cached.getOrDefault(emptyList()).isNotEmpty()) {
@@ -113,7 +113,10 @@ class ExerciseRepository @Inject constructor(
         }
         GymLogger.d(TAG, "Cache MISS — calling API for body parts")
         return runCatching {
-            api.getBodyPartList(apiKey = apiKey)
+            val parts = api.getBodyPartList(apiKey = apiKey)
+            // Auto-cache lần tới không cần gọi API nữa
+            cache.pushBodyPartList(parts)
+            parts
         }.onFailure { GymLogger.e(TAG, it, "getBodyPartList API failed") }
     }
 

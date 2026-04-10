@@ -63,7 +63,7 @@ class AdminExerciseImportViewModel @Inject constructor(
             repository.fetchRawExercisesForImport(apiKey, bodyPart = bodyPart, limit = limit)
                 .onSuccess { exercises ->
                     appendLog("📥 Fetch xong: ${exercises.size} bài tập")
-                    cache.pushExercises(bodyPart, exercises)
+                    cache.pushExercisesAndUpdateMeta(bodyPart, exercises)
                         .onSuccess { count ->
                             val imported = _state.value.importedParts + bodyPart
                             _state.update { it.copy(isLoading = false, importedParts = imported) }
@@ -141,7 +141,7 @@ class AdminExerciseImportViewModel @Inject constructor(
                 appendLog("[${ i + 1}/${parts.size}] Đang import '$part'...")
                 repository.fetchRawExercisesForImport(apiKey, bodyPart = part, limit = limit)
                     .onSuccess { exercises ->
-                        cache.pushExercises(part, exercises)
+                        cache.pushExercisesAndUpdateMeta(part, exercises)
                             .onSuccess { count ->
                                 val imported = _state.value.importedParts + part
                                 _state.update { it.copy(importedParts = imported) }

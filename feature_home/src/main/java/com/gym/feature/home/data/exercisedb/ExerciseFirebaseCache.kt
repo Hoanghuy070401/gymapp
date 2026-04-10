@@ -45,6 +45,24 @@ class ExerciseFirebaseCache @Inject constructor() {
         GymLogger.d(TAG, "Pushed ${parts.size} body parts")
     }.onFailure { GymLogger.e(TAG, it, "Failed to push body parts") }
 
+    /**
+     * Push exercises và tự động cập nhật _meta/bodyParts.
+     * Gọi sau mỗi lần import — kể cả import từng phần (không chỉ importAll).
+     */
+    suspend fun pushExercisesAndUpdateMeta(bodyPart: String, exercises: List<ExerciseInfo>): Result<Int> =
+        runCatching {
+            val ref = root.child(sanitize(bodyPart))
+            exercises.forEach { ex ->
+                ref.child(ex.id).setValue(ex.toMap()).await()
+            }
+            // Cập nhật _meta/bodyParts = tất cả keys hiện tại trên Firebase
+            refreshMetaBodyParts()
+            GymLogger.d(TAG, "Pushed ${exercises.size} exercises for bodyPart=$bodyPart")
+            exercises.size
+        }.onFailure { e ->
+            GymLogger.e(TAG, e, "Failed to push exercises bodyPart=$bodyPart")
+        }
+
     /** Xoá toàn bộ bài tập của 1 body part khỏi Firebase (Admin only) */
     suspend fun deleteBodyPart(bodyPart: String): Result<Unit> = runCatching {
         root.child(sanitize(bodyPart)).removeValue().await()
@@ -68,10 +86,33 @@ class ExerciseFirebaseCache @Inject constructor() {
         snap.exists()
     }.getOrDefault(false)
 
-    /** Tải danh sách body parts từ Firebase */
+    /**
+     * Tải danh sách body parts từ Firebase.
+     * - Ư u tiên: đọc _meta/bodyParts
+     * - Fallback: derive từ các node keys (trường hợp admin chưa chạy importAll)
+     */
     suspend fun getBodyPartList(): Result<List<String>> = runCatching {
-        val snap = root.child("_meta").child("bodyParts").get().await()
-        snap.children.mapNotNull { it.getValue(String::class.java) }
+        // 1. Try _meta first
+        val metaSnap = root.child("_meta").child("bodyParts").get().await()
+        val metaParts = metaSnap.children.mapNotNull { it.getValue(String::class.java) }
+        if (metaParts.isNotEmpty()) {
+            GymLogger.d(TAG, "Body parts from _meta: ${metaParts.size}")
+            return@runCatching metaParts
+        }
+
+        // 2. Fallback: derive from existing node keys (e.g. after individual imports)
+        val rootSnap = root.get().await()
+        val derivedParts = rootSnap.children
+            .mapNotNull { it.key }
+            .filter { it != "_meta" }
+            .map { it.replace("_", " ") }  // reverse sanitize
+        if (derivedParts.isNotEmpty()) {
+            GymLogger.d(TAG, "Body parts derived from node keys: ${derivedParts.size}")
+            return@runCatching derivedParts
+        }
+
+        GymLogger.d(TAG, "No body parts found in Firebase cache")
+        emptyList()
     }.onFailure { GymLogger.e(TAG, it, "Failed to get body parts from cache") }
 
     /** Tải bài tập theo body part từ Firebase */
@@ -123,6 +164,18 @@ class ExerciseFirebaseCache @Inject constructor() {
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
+
+    /** Sau khi xóa/thêm — cập nhật _meta/bodyParts từ các node keys hiện tại */
+    private suspend fun refreshMetaBodyParts() {
+        runCatching {
+            val snap = root.get().await()
+            val parts = snap.children
+                .mapNotNull { it.key }
+                .filter { it != "_meta" }
+                .map { it.replace("_", " ") }
+            root.child("_meta").child("bodyParts").setValue(parts).await()
+        }.onFailure { GymLogger.e(TAG, it, "Failed to refresh meta body parts") }
+    }
 
     private fun sanitize(key: String) = key.lowercase().replace(" ", "_")
 
