@@ -17,24 +17,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.gym.core.R
 import com.gym.core.designsystem.theme.AppColors
 import com.gym.core.designsystem.theme.AppSpacing
 
 private data class CategoryItem(
     val label: String,
     val icon: ImageVector,
-    val iconTint: Color
-)
-
-private val categories = listOf(
-    CategoryItem("Workout", Icons.Default.FitnessCenter, AppColors.ElectricLime),
-    CategoryItem("Progress\nTracking", Icons.Default.Timeline, AppColors.TonalLavender),
-    CategoryItem("Nutrition", Icons.Default.Restaurant, Color(0xFFFF8A65)),
-    CategoryItem("Community", Icons.Default.Groups, Color(0xFF4FC3F7))
+    val iconTint: Color,
+    val onClick: () -> Unit
 )
 
 @Composable
@@ -45,7 +41,12 @@ fun HomeCategoryGrid(
     onCommunityClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val callbacks = listOf(onWorkoutClick, onProgressClick, onNutritionClick, onCommunityClick)
+    val categories = listOf(
+        CategoryItem(stringResource(R.string.cat_workout), Icons.Default.FitnessCenter, AppColors.ElectricLime, onWorkoutClick),
+        CategoryItem(stringResource(R.string.cat_progress), Icons.Default.Timeline, AppColors.TonalLavender, onProgressClick),
+        CategoryItem(stringResource(R.string.cat_nutrition), Icons.Default.Restaurant, Color(0xFFFF8A65), onNutritionClick),
+        CategoryItem(stringResource(R.string.cat_community), Icons.Default.Groups, Color(0xFF4FC3F7), onCommunityClick)
+    )
 
     Row(
         modifier = modifier
@@ -53,12 +54,12 @@ fun HomeCategoryGrid(
             .padding(horizontal = AppSpacing.ScreenHorizontal),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        categories.forEachIndexed { index, item ->
+        categories.forEach { item ->
             CategoryButton(
                 label = item.label,
                 icon = item.icon,
                 iconTint = item.iconTint,
-                onClick = callbacks[index],
+                onClick = item.onClick,
                 modifier = Modifier.weight(1f)
             )
         }

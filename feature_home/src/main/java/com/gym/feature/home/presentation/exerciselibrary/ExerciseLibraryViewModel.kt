@@ -79,12 +79,11 @@ class ExerciseLibraryViewModel @Inject constructor(
 
     private suspend fun translateExercises(list: List<ExerciseInfo>): List<ExerciseInfo> {
         if (!translatorManager.isModelDownloaded) return list
-        
-        // Translate parallelly for speed
+
         val jobs = list.map { ex ->
             viewModelScope.async {
                 ex.copy(
-                    name = translatorManager.translate(ex.name),
+                    // name giữ nguyên tiếng Anh theo yêu cầu ("Jack Burpee" không cần dịch)
                     bodyPart = translatorManager.translate(ex.bodyPart),
                     equipment = translatorManager.translate(ex.equipment),
                     target = translatorManager.translate(ex.target),

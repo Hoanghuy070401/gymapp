@@ -33,12 +33,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
+import com.gym.core.R
 import com.gym.core.designsystem.component.GymCard
 import com.gym.core.designsystem.component.SectionHeader
 import com.gym.core.designsystem.theme.AppColors
@@ -176,7 +178,10 @@ private fun HomeHeaderSection(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            val greeting = if (userName.isNotBlank()) "Hi, $userName 👋" else "Hi there 👋"
+            val greeting = if (userName.isNotBlank())
+                stringResource(R.string.home_greeting_known, userName)
+            else
+                stringResource(R.string.home_greeting_unknown)
             Text(
                 text = greeting,
                 style = AppTypography.headlineSmall.copy(
@@ -185,7 +190,7 @@ private fun HomeHeaderSection(
                 )
             )
             Text(
-                text = "It's time to challenge your limits.",
+                text = stringResource(R.string.home_subtitle),
                 style = AppTypography.bodySmall,
                 color = AppColors.OnSurfaceVariant
             )
@@ -243,9 +248,9 @@ private fun RecommendedSection(
     onSeeAll: () -> Unit
 ) {
     Column {
-        SectionHeader(title = "Recommendations", trailingContent = {
+        SectionHeader(title = stringResource(R.string.home_recommendations), trailingContent = {
             Text(
-                text = "See All ▷",
+                text = stringResource(R.string.home_see_all),
                 style = AppTypography.labelMedium,
                 color = AppColors.TonalLavender,
                 modifier = Modifier.clickable(onClick = onSeeAll)
@@ -450,9 +455,9 @@ internal fun WorkoutVideosSection(
     onSeeAll: () -> Unit
 ) {
     Column {
-        SectionHeader(title = "Workout Videos", trailingContent = {
+        SectionHeader(title = stringResource(R.string.home_workout_videos), trailingContent = {
             Text(
-                text = "See All ▷",
+                text = stringResource(R.string.home_see_all),
                 style = AppTypography.labelMedium,
                 color = AppColors.TonalLavender,
                 modifier = Modifier.clickable(onClick = onSeeAll)
@@ -583,7 +588,7 @@ private fun WeeklyChallengeSection(challenge: WeeklyChallenge) {
                 if (challenge.target > 0) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "${challenge.current} / ${challenge.target} completed",
+                        text = stringResource(R.string.home_challenge_progress, challenge.current, challenge.target),
                         style = AppTypography.labelMedium.copy(fontWeight = FontWeight.Bold),
                         color = AppColors.Surface
                     )
@@ -608,9 +613,9 @@ private fun WeeklyChallengeSection(challenge: WeeklyChallenge) {
 @Composable
 private fun ArticlesSection(articles: List<ArticleTip>, onSeeAll: () -> Unit) {
     Column {
-        SectionHeader(title = "Articles & Tips", trailingContent = {
+        SectionHeader(title = stringResource(R.string.home_articles_tips), trailingContent = {
             Text(
-                text = "See All ▷",
+                text = stringResource(R.string.home_see_all),
                 style = AppTypography.labelMedium,
                 color = AppColors.TonalLavender,
                 modifier = Modifier.clickable(onClick = onSeeAll)

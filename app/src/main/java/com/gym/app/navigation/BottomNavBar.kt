@@ -21,6 +21,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.gym.core.R
 import com.gym.core.designsystem.theme.AppColors
  /* Bottom navigation bar for the main app shell.
  * Items: Home | Favorites | Workout | Support
@@ -35,10 +37,10 @@ fun BottomNavBar(
     modifier: Modifier = Modifier
 ) {
     val items = listOf(
-        BottomNavItem("home", Screen.Home.route, Icons.Default.Home, "Home", onNavigateToHome),
-        BottomNavItem("library", Screen.ExerciseLibrary.route, Icons.AutoMirrored.Filled.MenuBook, "Library", onNavigateToFavorites),
-        BottomNavItem("workout", Screen.Workout.route, Icons.Default.FitnessCenter, "Workout", onNavigateToWorkout),
-        BottomNavItem("support", "support", Icons.Default.Headset, "Support", onNavigateToSupport)
+        BottomNavItem("home", Screen.Home.route, Icons.Default.Home, stringResource(R.string.nav_home), onNavigateToHome),
+        BottomNavItem("library", Screen.ExerciseLibrary.route, Icons.AutoMirrored.Filled.MenuBook, stringResource(R.string.nav_library), onNavigateToFavorites),
+        BottomNavItem("workout", Screen.Workout.route, Icons.Default.FitnessCenter, stringResource(R.string.nav_workout), onNavigateToWorkout),
+        BottomNavItem("support", "support", Icons.Default.Headset, stringResource(R.string.nav_support), onNavigateToSupport)
     )
 
     Row(
