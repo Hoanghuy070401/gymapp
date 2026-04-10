@@ -45,6 +45,21 @@ class ExerciseFirebaseCache @Inject constructor() {
         GymLogger.d(TAG, "Pushed ${parts.size} body parts")
     }.onFailure { GymLogger.e(TAG, it, "Failed to push body parts") }
 
+    /** Xoá toàn bộ bài tập của 1 body part khỏi Firebase (Admin only) */
+    suspend fun deleteBodyPart(bodyPart: String): Result<Unit> = runCatching {
+        root.child(sanitize(bodyPart)).removeValue().await()
+        GymLogger.d(TAG, "Deleted bodyPart=$bodyPart from Firebase")
+    }.onFailure { GymLogger.e(TAG, it, "Failed to delete bodyPart=$bodyPart") }
+
+    /** Xoá toàn bộ exercises (giữ lại _meta) trong Firebase (Admin only) */
+    suspend fun clearAllExercises(): Result<Unit> = runCatching {
+        val snap = root.get().await()
+        snap.children
+            .filter { it.key != "_meta" }
+            .forEach { it.ref.removeValue().await() }
+        GymLogger.d(TAG, "Cleared all exercise data from Firebase")
+    }.onFailure { GymLogger.e(TAG, it, "Failed to clear all exercises") }
+
     // ── User: Read from Firebase ──────────────────────────────────────────────
 
     /** Kiểm tra xem body part có data trên Firebase không */

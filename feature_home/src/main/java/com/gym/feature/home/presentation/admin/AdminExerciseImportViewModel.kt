@@ -16,9 +16,10 @@ import javax.inject.Inject
 data class AdminImportState(
     val isLoading: Boolean = false,
     val bodyParts: List<String> = emptyList(),
-    val importedParts: Set<String> = emptySet(),        // đã có trong Firebase
+    val importedParts: Set<String> = emptySet(),
     val log: List<String> = emptyList(),
-    val error: String? = null
+    val error: String? = null,
+    val confirmClearAll: Boolean = false         // true = hiện dialog xác nhận xóa tất cả
 )
 
 @HiltViewModel
@@ -65,10 +66,7 @@ class AdminExerciseImportViewModel @Inject constructor(
                     cache.pushExercises(bodyPart, exercises)
                         .onSuccess { count ->
                             val imported = _state.value.importedParts + bodyPart
-                            _state.update { it.copy(
-                                isLoading = false,
-                                importedParts = imported
-                            )}
+                            _state.update { it.copy(isLoading = false, importedParts = imported) }
                             appendLog("✅ Đã lưu $count bài tập '$bodyPart' lên Firebase!")
                         }
                         .onFailure { e ->
@@ -79,6 +77,48 @@ class AdminExerciseImportViewModel @Inject constructor(
                 .onFailure { e ->
                     _state.update { it.copy(isLoading = false, error = e.message) }
                     appendLog("❌ Lỗi fetch API: ${e.message}")
+                }
+        }
+    }
+
+    /** Xóa toàn bộ bài tập của 1 body part khỏi Firebase */
+    fun deleteBodyPart(bodyPart: String) {
+        if (_state.value.isLoading) return
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+            appendLog("🗑️ Xoá '$bodyPart' khỏi Firebase...")
+            cache.deleteBodyPart(bodyPart)
+                .onSuccess {
+                    val remaining = _state.value.importedParts - bodyPart
+                    _state.update { it.copy(isLoading = false, importedParts = remaining) }
+                    appendLog("✅ Đã xoá '$bodyPart' thành công")
+                }
+                .onFailure { e ->
+                    _state.update { it.copy(isLoading = false, error = e.message) }
+                    appendLog("❌ Lỗi xoá: ${e.message}")
+                }
+        }
+    }
+
+    /** Hiện/ẩn dialog xác nhận xóa tất cả */
+    fun requestClearAll() { _state.update { it.copy(confirmClearAll = true) } }
+    fun cancelClearAll()  { _state.update { it.copy(confirmClearAll = false) } }
+
+    /** Xóa TOÀN BỘ exercises khỏi Firebase (sau xác nhận) */
+    fun confirmClearAll() {
+        _state.update { it.copy(confirmClearAll = false) }
+        if (_state.value.isLoading) return
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+            appendLog("🗑️ Xoá TOÀN BỘ bài tập khỏi Firebase...")
+            cache.clearAllExercises()
+                .onSuccess {
+                    _state.update { it.copy(isLoading = false, importedParts = emptySet()) }
+                    appendLog("✅ Đã xóa sạch toàn bộ! Có thể import lại từ đầu.")
+                }
+                .onFailure { e ->
+                    _state.update { it.copy(isLoading = false, error = e.message) }
+                    appendLog("❌ Lỗi: ${e.message}")
                 }
         }
     }
