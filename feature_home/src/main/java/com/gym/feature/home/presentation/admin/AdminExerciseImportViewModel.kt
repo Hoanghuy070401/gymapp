@@ -13,14 +13,35 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/** Filter tab cho danh sách body parts */
+enum class BodyPartFilter { ALL, NOT_IMPORTED, IMPORTED }
+
+/** Trạng thái pagination cho từng body part */
+data class BodyPartImportInfo(
+    val name: String,
+    val isImported: Boolean = false,
+    val exerciseCount: Int = 0,          // số bài đã lưu trong Firebase
+    val loadedOffset: Int = 0,           // offset đã tải (0 = chưa import lần nào)
+    val isLoadingMore: Boolean = false   // đang load trang tiếp theo
+)
+
 data class AdminImportState(
     val isLoading: Boolean = false,
-    val bodyParts: List<String> = emptyList(),
-    val importedParts: Set<String> = emptySet(),
+    val bodyPartInfos: List<BodyPartImportInfo> = emptyList(),
     val log: List<String> = emptyList(),
     val error: String? = null,
-    val confirmClearAll: Boolean = false         // true = hiện dialog xác nhận xóa tất cả
-)
+    val confirmClearAll: Boolean = false,
+    val activeFilter: BodyPartFilter = BodyPartFilter.ALL
+) {
+    val importedParts: Set<String> get() = bodyPartInfos.filter { it.isImported }.map { it.name }.toSet()
+    val pendingParts: List<String>  get() = bodyPartInfos.filter { !it.isImported }.map { it.name }
+
+    val filteredList: List<BodyPartImportInfo> get() = when (activeFilter) {
+        BodyPartFilter.ALL          -> bodyPartInfos
+        BodyPartFilter.NOT_IMPORTED -> bodyPartInfos.filter { !it.isImported }
+        BodyPartFilter.IMPORTED     -> bodyPartInfos.filter { it.isImported }
+    }
+}
 
 @HiltViewModel
 class AdminExerciseImportViewModel @Inject constructor(
@@ -35,86 +56,183 @@ class AdminExerciseImportViewModel @Inject constructor(
 
     init { loadBodyParts() }
 
+    fun setFilter(filter: BodyPartFilter) {
+        _state.update { it.copy(activeFilter = filter) }
+    }
+
     private fun loadBodyParts() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
-            // Admin: gọi ExerciseDB API để lấy danh sách body parts đầy đủ
-            repository.fetchBodyPartListFromApi(apiKey).onSuccess { parts ->
-                // Kiểm tra part nào đã import vào Firebase
-                val imported = parts.filter { cache.hasBodyPart(it) }.toSet()
-                _state.update { it.copy(
-                    isLoading = false,
-                    bodyParts = parts,
-                    importedParts = imported
-                )}
-            }.onFailure { e ->
-                _state.update { it.copy(isLoading = false, error = e.message) }
-            }
+            appendLog("🔄 Đang tải danh sách body parts từ API...")
+
+            repository.fetchBodyPartListFromApi(apiKey)
+                .onSuccess { parts ->
+                    val infos = parts.map { part ->
+                        val imported = cache.hasBodyPart(part)
+                        val count = if (imported) cache.getExerciseCount(part) else 0
+                        BodyPartImportInfo(
+                            name          = part,
+                            isImported    = imported,
+                            exerciseCount = count,
+                            loadedOffset  = if (imported) count else 0
+                        )
+                    }.sortedWith(compareBy({ it.isImported }, { it.name })) // Chưa import lên trước
+                    _state.update { it.copy(isLoading = false, bodyPartInfos = infos) }
+                    appendLog("✅ Tải xong: ${parts.size} body parts (${parts.count { cache.hasBodyPart(it) }} đã import)")
+                }
+                .onFailure { e ->
+                    _state.update { it.copy(isLoading = false, error = e.message) }
+                    appendLog("❌ Lỗi tải danh sách: ${e.message}")
+                }
         }
     }
 
-    /** Import exercises cho 1 body part cụ thể — limit 100 records */
+    /** Import 1 body part (100 bài đầu tiên) */
     fun importBodyPart(bodyPart: String, limit: Int = 100) {
         if (_state.value.isLoading) return
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, error = null) }
-            appendLog("⏳ Đang fetch '$bodyPart' từ API... (limit=$limit)")
+            setPartLoading(bodyPart, true)
+            appendLog("⏳ Đang fetch '$bodyPart' (offset=0, limit=$limit)...")
 
-            repository.fetchRawExercisesForImport(apiKey, bodyPart = bodyPart, limit = limit)
+            repository.fetchRawExercisesForImport(apiKey, bodyPart = bodyPart, limit = limit, offset = 0)
                 .onSuccess { exercises ->
                     appendLog("📥 Fetch xong: ${exercises.size} bài tập")
                     cache.pushExercisesAndUpdateMeta(bodyPart, exercises)
                         .onSuccess { count ->
-                            val imported = _state.value.importedParts + bodyPart
-                            _state.update { it.copy(isLoading = false, importedParts = imported) }
-                            appendLog("✅ Đã lưu $count bài tập '$bodyPart' lên Firebase!")
+                            updatePartInfo(bodyPart, isImported = true, exerciseCount = count, loadedOffset = exercises.size)
+                            appendLog("✅ '$bodyPart': $count bài → Firebase")
                         }
-                        .onFailure { e ->
-                            _state.update { it.copy(isLoading = false, error = e.message) }
-                            appendLog("❌ Lỗi lưu Firebase: ${e.message}")
-                        }
+                        .onFailure { e -> appendLog("❌ Lỗi Firebase: ${e.message}") }
                 }
-                .onFailure { e ->
-                    _state.update { it.copy(isLoading = false, error = e.message) }
-                    appendLog("❌ Lỗi fetch API: ${e.message}")
-                }
+                .onFailure { e -> appendLog("❌ Lỗi API: ${e.message}") }
+
+            setPartLoading(bodyPart, false)
         }
     }
 
-    /** Xóa toàn bộ bài tập của 1 body part khỏi Firebase */
+    /**
+     * Load thêm bài tập cho body part đã import (phân trang).
+     * Gọi khi user nhấn "Load thêm 100 bài".
+     */
+    fun loadMoreForBodyPart(bodyPart: String, limit: Int = 100) {
+        val info = _state.value.bodyPartInfos.find { it.name == bodyPart } ?: return
+        if (info.isLoadingMore) return
+
+        val offset = info.loadedOffset
+        viewModelScope.launch {
+            setPartLoadingMore(bodyPart, true)
+            appendLog("⏳ Load thêm '$bodyPart' (offset=$offset, limit=$limit)...")
+
+            repository.fetchRawExercisesForImport(apiKey, bodyPart = bodyPart, limit = limit, offset = offset)
+                .onSuccess { exercises ->
+                    if (exercises.isEmpty()) {
+                        appendLog("ℹ️ '$bodyPart': Không còn bài tập nào nữa")
+                    } else {
+                        cache.pushExercisesAndUpdateMeta(bodyPart, exercises)
+                            .onSuccess { _ ->
+                                val newCount = info.exerciseCount + exercises.size
+                                val newOffset = offset + exercises.size
+                                updatePartInfo(bodyPart, isImported = true, exerciseCount = newCount, loadedOffset = newOffset)
+                                appendLog("✅ '$bodyPart': +${exercises.size} bài (tổng: $newCount)")
+                            }
+                    }
+                }
+                .onFailure { e -> appendLog("❌ Load thêm thất bại: ${e.message}") }
+
+            setPartLoadingMore(bodyPart, false)
+        }
+    }
+
+    /** Import TOÀN BỘ các body parts chưa import (theo filter Chưa import) */
+    fun importPending(limit: Int = 100) {
+        val pending = _state.value.pendingParts
+        if (pending.isEmpty()) { appendLog("ℹ️ Tất cả đã được import!"); return }
+        if (_state.value.isLoading) return
+
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+            appendLog("🚀 Import ${pending.size} body parts chưa import...")
+
+            pending.forEachIndexed { i, part ->
+                appendLog("[${i + 1}/${pending.size}] '$part'...")
+                repository.fetchRawExercisesForImport(apiKey, bodyPart = part, limit = limit)
+                    .onSuccess { exercises ->
+                        cache.pushExercisesAndUpdateMeta(part, exercises)
+                            .onSuccess { count ->
+                                updatePartInfo(part, isImported = true, exerciseCount = count, loadedOffset = exercises.size)
+                                appendLog("  ✅ '$part': $count bài")
+                            }
+                            .onFailure { appendLog("  ❌ '$part': Lỗi Firebase") }
+                    }
+                    .onFailure { appendLog("  ❌ '$part': Lỗi API") }
+            }
+
+            _state.update { it.copy(isLoading = false) }
+            appendLog("🎉 Hoàn thành! ${_state.value.importedParts.size}/${_state.value.bodyPartInfos.size} body parts")
+        }
+    }
+
+    /** Import TẤT CẢ (kể cả đã import → ghi đè) */
+    fun importAll(limit: Int = 100) {
+        val parts = _state.value.bodyPartInfos.map { it.name }
+        if (parts.isEmpty()) return
+        if (_state.value.isLoading) return
+
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+            appendLog("🚀 Import TẤT CẢ ${parts.size} body parts (ghi đè)...")
+
+            parts.forEachIndexed { i, part ->
+                appendLog("[${i + 1}/${parts.size}] '$part'...")
+                repository.fetchRawExercisesForImport(apiKey, bodyPart = part, limit = limit)
+                    .onSuccess { exercises ->
+                        cache.pushExercisesAndUpdateMeta(part, exercises)
+                            .onSuccess { count ->
+                                updatePartInfo(part, isImported = true, exerciseCount = count, loadedOffset = exercises.size)
+                                appendLog("  ✅ $count bài")
+                            }
+                            .onFailure { appendLog("  ❌ Lỗi Firebase") }
+                    }
+                    .onFailure { appendLog("  ❌ Lỗi API") }
+            }
+
+            _state.update { it.copy(isLoading = false) }
+            appendLog("🎉 Hoàn thành!")
+        }
+    }
+
     fun deleteBodyPart(bodyPart: String) {
         if (_state.value.isLoading) return
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
-            appendLog("🗑️ Xoá '$bodyPart' khỏi Firebase...")
+            appendLog("🗑️ Xoá '$bodyPart'...")
             cache.deleteBodyPart(bodyPart)
                 .onSuccess {
-                    val remaining = _state.value.importedParts - bodyPart
-                    _state.update { it.copy(isLoading = false, importedParts = remaining) }
-                    appendLog("✅ Đã xoá '$bodyPart' thành công")
+                    updatePartInfo(bodyPart, isImported = false, exerciseCount = 0, loadedOffset = 0)
+                    appendLog("✅ Đã xoá '$bodyPart'")
                 }
-                .onFailure { e ->
-                    _state.update { it.copy(isLoading = false, error = e.message) }
-                    appendLog("❌ Lỗi xoá: ${e.message}")
-                }
+                .onFailure { e -> appendLog("❌ Lỗi: ${e.message}") }
         }
     }
 
-    /** Hiện/ẩn dialog xác nhận xóa tất cả */
     fun requestClearAll() { _state.update { it.copy(confirmClearAll = true) } }
     fun cancelClearAll()  { _state.update { it.copy(confirmClearAll = false) } }
 
-    /** Xóa TOÀN BỘ exercises khỏi Firebase (sau xác nhận) */
     fun confirmClearAll() {
         _state.update { it.copy(confirmClearAll = false) }
-        if (_state.value.isLoading) return
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
-            appendLog("🗑️ Xoá TOÀN BỘ bài tập khỏi Firebase...")
+            appendLog("🗑️ Xoá TOÀN BỘ...")
             cache.clearAllExercises()
                 .onSuccess {
-                    _state.update { it.copy(isLoading = false, importedParts = emptySet()) }
-                    appendLog("✅ Đã xóa sạch toàn bộ! Có thể import lại từ đầu.")
+                    _state.update { s ->
+                        s.copy(
+                            isLoading = false,
+                            bodyPartInfos = s.bodyPartInfos.map {
+                                it.copy(isImported = false, exerciseCount = 0, loadedOffset = 0)
+                            }
+                        )
+                    }
+                    appendLog("✅ Đã xóa sạch toàn bộ!")
                 }
                 .onFailure { e ->
                     _state.update { it.copy(isLoading = false, error = e.message) }
@@ -123,40 +241,37 @@ class AdminExerciseImportViewModel @Inject constructor(
         }
     }
 
-    /** Import TẤT CẢ body parts tuần tự */
-    fun importAll(limit: Int = 100) {
-        if (_state.value.isLoading) return
-        viewModelScope.launch {
-            val parts = _state.value.bodyParts
-            if (parts.isEmpty()) {
-                appendLog("⚠️ Chưa có danh sách body parts")
-                return@launch
-            }
-            appendLog("🚀 Bắt đầu import TẤT CẢ ${parts.size} body parts...")
+    // ── Helpers ───────────────────────────────────────────────────────────────
 
-            // Push body part list lên Firebase
-            cache.pushBodyPartList(parts)
+    private fun updatePartInfo(name: String, isImported: Boolean, exerciseCount: Int, loadedOffset: Int) {
+        _state.update { s ->
+            s.copy(bodyPartInfos = s.bodyPartInfos.map {
+                if (it.name == name) it.copy(isImported = isImported, exerciseCount = exerciseCount, loadedOffset = loadedOffset)
+                else it
+            })
+        }
+    }
 
-            parts.forEachIndexed { i, part ->
-                appendLog("[${ i + 1}/${parts.size}] Đang import '$part'...")
-                repository.fetchRawExercisesForImport(apiKey, bodyPart = part, limit = limit)
-                    .onSuccess { exercises ->
-                        cache.pushExercisesAndUpdateMeta(part, exercises)
-                            .onSuccess { count ->
-                                val imported = _state.value.importedParts + part
-                                _state.update { it.copy(importedParts = imported) }
-                                appendLog("  ✅ '$part': $count bài tập")
-                            }
-                            .onFailure { appendLog("  ❌ '$part': Lỗi Firebase") }
-                    }
-                    .onFailure { appendLog("  ❌ '$part': Lỗi API") }
-            }
-            _state.update { it.copy(isLoading = false) }
-            appendLog("🎉 Hoàn thành import tất cả!")
+    private fun setPartLoading(name: String, loading: Boolean) {
+        _state.update { s ->
+            s.copy(
+                isLoading = loading,
+                bodyPartInfos = s.bodyPartInfos.map {
+                    if (it.name == name) it.copy(isLoadingMore = loading) else it
+                }
+            )
+        }
+    }
+
+    private fun setPartLoadingMore(name: String, loading: Boolean) {
+        _state.update { s ->
+            s.copy(bodyPartInfos = s.bodyPartInfos.map {
+                if (it.name == name) it.copy(isLoadingMore = loading) else it
+            })
         }
     }
 
     private fun appendLog(message: String) {
-        _state.update { it.copy(log = listOf(message) + it.log) }
+        _state.update { it.copy(log = listOf(message) + it.log.take(49)) }
     }
 }

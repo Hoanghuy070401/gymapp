@@ -86,6 +86,12 @@ class ExerciseFirebaseCache @Inject constructor() {
         snap.exists()
     }.getOrDefault(false)
 
+    /** Đếm số bài tập đã lưu cho body part */
+    suspend fun getExerciseCount(bodyPart: String): Int = runCatching {
+        val snap = root.child(sanitize(bodyPart)).get().await()
+        snap.childrenCount.toInt()
+    }.getOrDefault(0)
+
     /**
      * Tải danh sách body parts từ Firebase.
      * - Ư u tiên: đọc _meta/bodyParts
