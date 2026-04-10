@@ -445,24 +445,40 @@ private fun BodyPartCard(
             }
         }
 
-        // Load More row (chỉ hiện khi đã import)
+        // Load More / Done row (chỉ hiện khi đã import)
         if (info.isImported && !info.isLoadingMore) {
             HorizontalDivider(color = AppColors.SurfaceContainerHigh.copy(0.5f), thickness = 0.5.dp)
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(enabled = !isGlobalLoading, onClick = onLoadMore)
-                    .padding(horizontal = 14.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(Icons.Default.ExpandMore, null, tint = GreenColor.copy(0.7f), modifier = Modifier.size(14.dp))
-                Spacer(Modifier.width(4.dp))
-                Text(
-                    text = "Load thêm 100 bài (offset: ${info.loadedOffset})",
-                    fontSize = 11.sp,
-                    color = GreenColor.copy(0.7f)
-                )
+            if (info.hasMoreData) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable(enabled = !isGlobalLoading, onClick = onLoadMore)
+                        .padding(horizontal = 14.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Default.ExpandMore, null, tint = GreenColor.copy(0.7f), modifier = Modifier.size(14.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        text = "Load thêm 100 bài (offset: ${info.loadedOffset})",
+                        fontSize = 11.sp,
+                        color = GreenColor.copy(0.7f)
+                    )
+                }
+            } else {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp, vertical = 6.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "✓ Đã tải hết — ${info.exerciseCount} bài",
+                        fontSize = 11.sp,
+                        color = AppColors.OnSurfaceVariant.copy(0.6f)
+                    )
+                }
             }
         }
     }

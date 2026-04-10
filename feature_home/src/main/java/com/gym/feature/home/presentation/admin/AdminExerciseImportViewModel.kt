@@ -22,7 +22,8 @@ data class BodyPartImportInfo(
     val isImported: Boolean = false,
     val exerciseCount: Int = 0,          // số bài đã lưu trong Firebase
     val loadedOffset: Int = 0,           // offset đã tải (0 = chưa import lần nào)
-    val isLoadingMore: Boolean = false   // đang load trang tiếp theo
+    val isLoadingMore: Boolean = false,  // đang load trang tiếp theo
+    val hasMoreData: Boolean = true      // false = đã hết data từ API (offset >= total)
 )
 
 data class AdminImportState(
@@ -116,7 +117,7 @@ class AdminExerciseImportViewModel @Inject constructor(
      */
     fun loadMoreForBodyPart(bodyPart: String, limit: Int = 100) {
         val info = _state.value.bodyPartInfos.find { it.name == bodyPart } ?: return
-        if (info.isLoadingMore) return
+        if (info.isLoadingMore || !info.hasMoreData) return
 
         val offset = info.loadedOffset
         viewModelScope.launch {
@@ -125,16 +126,32 @@ class AdminExerciseImportViewModel @Inject constructor(
 
             repository.fetchRawExercisesForImport(apiKey, bodyPart = bodyPart, limit = limit, offset = offset)
                 .onSuccess { exercises ->
-                    if (exercises.isEmpty()) {
-                        appendLog("ℹ️ '$bodyPart': Không còn bài tập nào nữa")
-                    } else {
-                        cache.pushExercisesAndUpdateMeta(bodyPart, exercises)
-                            .onSuccess { _ ->
-                                val newCount = info.exerciseCount + exercises.size
-                                val newOffset = offset + exercises.size
-                                updatePartInfo(bodyPart, isImported = true, exerciseCount = newCount, loadedOffset = newOffset)
-                                appendLog("✅ '$bodyPart': +${exercises.size} bài (tổng: $newCount)")
-                            }
+                    when {
+                        exercises.isEmpty() -> {
+                            // Đã hết data từ API
+                            updatePartHasMore(bodyPart, hasMore = false)
+                            appendLog("ℹ️ '$bodyPart': Đã tải hết (${ info.exerciseCount} bài tổng cộng)")
+                        }
+                        exercises.size < limit -> {
+                            // Trả về ít hơn limit = trang cuối
+                            cache.pushExercisesAndUpdateMeta(bodyPart, exercises)
+                                .onSuccess { _ ->
+                                    val newCount = info.exerciseCount + exercises.size
+                                    updatePartInfo(bodyPart, isImported = true, exerciseCount = newCount, loadedOffset = offset + exercises.size)
+                                    updatePartHasMore(bodyPart, hasMore = false)  // đầy dữ liệu
+                                    appendLog("✅ '$bodyPart': +${exercises.size} bài (Tổng: $newCount) — Đã hết!")
+                                }
+                        }
+                        else -> {
+                            // Đủ limit → có thể còn trang tiếp
+                            cache.pushExercisesAndUpdateMeta(bodyPart, exercises)
+                                .onSuccess { _ ->
+                                    val newCount = info.exerciseCount + exercises.size
+                                    val newOffset = offset + exercises.size
+                                    updatePartInfo(bodyPart, isImported = true, exerciseCount = newCount, loadedOffset = newOffset)
+                                    appendLog("✅ '$bodyPart': +${exercises.size} bài (Tổng: $newCount, offset tiếp: $newOffset)")
+                                }
+                        }
                     }
                 }
                 .onFailure { e -> appendLog("❌ Load thêm thất bại: ${e.message}") }
@@ -248,6 +265,14 @@ class AdminExerciseImportViewModel @Inject constructor(
             s.copy(bodyPartInfos = s.bodyPartInfos.map {
                 if (it.name == name) it.copy(isImported = isImported, exerciseCount = exerciseCount, loadedOffset = loadedOffset)
                 else it
+            })
+        }
+    }
+
+    private fun updatePartHasMore(name: String, hasMore: Boolean) {
+        _state.update { s ->
+            s.copy(bodyPartInfos = s.bodyPartInfos.map {
+                if (it.name == name) it.copy(hasMoreData = hasMore) else it
             })
         }
     }
