@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="exercise_detail_title">Exercise Detail</string>
+    <string name="exercise_library_title">Exercise Library</string>
+    <string name="instructions_title">Instructions</string>
+    <string name="language_english">English</string>
+    <string name="language_setting_title">Language</string>
+    <string name="language_vietnamese">Tiếng Việt</string>
+    <string name="no_exercises_found">No exercises found</string>
+    <string name="retry_button">Retry</string>
+    <string name="search_exercises">Search exercises...</string>
+    <string name="secondary_muscles_title">Secondary Muscles</string>
+</resources>

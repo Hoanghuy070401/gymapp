@@ -1,5 +1,6 @@
 package com.gym.feature.home.presentation.exerciselibrary;
 
+import com.gym.core.translation.TranslatorManager;
 import com.gym.feature.home.data.exercisedb.ExerciseRepository;
 import dagger.internal.DaggerGenerated;
 import dagger.internal.Factory;
@@ -25,21 +26,27 @@ import javax.inject.Provider;
 public final class ExerciseLibraryViewModel_Factory implements Factory<ExerciseLibraryViewModel> {
   private final Provider<ExerciseRepository> repositoryProvider;
 
-  public ExerciseLibraryViewModel_Factory(Provider<ExerciseRepository> repositoryProvider) {
+  private final Provider<TranslatorManager> translatorManagerProvider;
+
+  public ExerciseLibraryViewModel_Factory(Provider<ExerciseRepository> repositoryProvider,
+      Provider<TranslatorManager> translatorManagerProvider) {
     this.repositoryProvider = repositoryProvider;
+    this.translatorManagerProvider = translatorManagerProvider;
   }
 
   @Override
   public ExerciseLibraryViewModel get() {
-    return newInstance(repositoryProvider.get());
+    return newInstance(repositoryProvider.get(), translatorManagerProvider.get());
   }
 
   public static ExerciseLibraryViewModel_Factory create(
-      Provider<ExerciseRepository> repositoryProvider) {
-    return new ExerciseLibraryViewModel_Factory(repositoryProvider);
+      Provider<ExerciseRepository> repositoryProvider,
+      Provider<TranslatorManager> translatorManagerProvider) {
+    return new ExerciseLibraryViewModel_Factory(repositoryProvider, translatorManagerProvider);
   }
 
-  public static ExerciseLibraryViewModel newInstance(ExerciseRepository repository) {
-    return new ExerciseLibraryViewModel(repository);
+  public static ExerciseLibraryViewModel newInstance(ExerciseRepository repository,
+      TranslatorManager translatorManager) {
+    return new ExerciseLibraryViewModel(repository, translatorManager);
   }
 }

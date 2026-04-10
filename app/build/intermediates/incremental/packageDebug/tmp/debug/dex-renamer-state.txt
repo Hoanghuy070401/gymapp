@@ -1,4 +1,4 @@
-#Wed Apr 08 17:26:18 ICT 2026
+#Fri Apr 10 08:37:03 ICT 2026
 base.0=/Users/nguyenhuy/antigravity/gym_project/app/build/intermediates/dex/debug/mergeExtDexDebug/classes.dex
 base.1=/Users/nguyenhuy/antigravity/gym_project/app/build/intermediates/dex/debug/mergeLibDexDebug/1/classes.dex
 base.10=/Users/nguyenhuy/antigravity/gym_project/app/build/intermediates/dex/debug/mergeLibDexDebug/7/classes.dex
@@ -12,6 +12,7 @@ base.17=/Users/nguyenhuy/antigravity/gym_project/app/build/intermediates/dex/deb
 base.18=/Users/nguyenhuy/antigravity/gym_project/app/build/intermediates/dex/debug/mergeExtDexDebug/classes3.dex
 base.19=/Users/nguyenhuy/antigravity/gym_project/app/build/intermediates/dex/debug/mergeExtDexDebug/classes4.dex
 base.2=/Users/nguyenhuy/antigravity/gym_project/app/build/intermediates/dex/debug/mergeLibDexDebug/10/classes.dex
+base.20=/Users/nguyenhuy/antigravity/gym_project/app/build/intermediates/dex/debug/mergeLibDexDebug/2/classes.dex
 base.3=/Users/nguyenhuy/antigravity/gym_project/app/build/intermediates/dex/debug/mergeLibDexDebug/11/classes.dex
 base.4=/Users/nguyenhuy/antigravity/gym_project/app/build/intermediates/dex/debug/mergeLibDexDebug/14/classes.dex
 base.5=/Users/nguyenhuy/antigravity/gym_project/app/build/intermediates/dex/debug/mergeLibDexDebug/15/classes.dex
@@ -32,6 +33,7 @@ path.17=classes2.dex
 path.18=classes3.dex
 path.19=classes4.dex
 path.2=10/classes.dex
+path.20=2/classes.dex
 path.3=11/classes.dex
 path.4=14/classes.dex
 path.5=15/classes.dex
@@ -52,6 +54,7 @@ renamed.17=classes18.dex
 renamed.18=classes19.dex
 renamed.19=classes20.dex
 renamed.2=classes3.dex
+renamed.20=classes21.dex
 renamed.3=classes4.dex
 renamed.4=classes5.dex
 renamed.5=classes6.dex

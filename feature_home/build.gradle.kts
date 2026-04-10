@@ -80,7 +80,4 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.okhttp.logging)
-
-    // ML Kit Translation
-    implementation("com.google.mlkit:translate:17.0.3")
 }

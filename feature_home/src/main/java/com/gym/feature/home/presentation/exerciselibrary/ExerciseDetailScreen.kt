@@ -20,10 +20,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.ImageLoader
 import coil.compose.AsyncImage
-import coil.decode.GifDecoder
-import coil.decode.ImageDecoderDecoder
 import coil.request.ImageRequest
 import com.gym.core.designsystem.component.GymScaffold
 import com.gym.core.designsystem.theme.AppColors
@@ -36,17 +33,7 @@ fun ExerciseDetailScreen(
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
-    val imageLoader = remember {
-        ImageLoader.Builder(context)
-            .components {
-                if (Build.VERSION.SDK_INT >= 28) {
-                    add(ImageDecoderDecoder.Factory())
-                } else {
-                    add(GifDecoder.Factory())
-                }
-            }
-            .build()
-    }
+    val imageLoader = rememberGifImageLoader()
 
     GymScaffold(scrollable = false) {
         // Top bar

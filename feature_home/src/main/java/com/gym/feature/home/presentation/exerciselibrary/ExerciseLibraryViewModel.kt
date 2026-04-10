@@ -17,7 +17,7 @@ import javax.inject.Inject
 data class ExerciseLibraryState(
     val isLoading: Boolean = false,
     val exercises: List<ExerciseInfo> = emptyList(),
-    val bodyParts: List<String> = listOf("all"),
+    val bodyParts: List<Pair<String, String>> = listOf("all" to "all"),
     val selectedBodyPart: String = "all",
     val searchQuery: String = "",
     val error: String? = null,
@@ -43,12 +43,12 @@ class ExerciseLibraryViewModel @Inject constructor(
         if (apiKey.isBlank()) {
             _state.update { it.copy(noApiKey = true) }
         } else {
-            // Khởi chạy tải model dịch thuât ngầm trước khi load
+            // downloadModelIfNeeded() suspend — đảm bảo model sẵn sàng trước khi dịch body parts và exercises
             viewModelScope.launch {
                 _state.update { it.copy(isTranslating = true) }
                 translatorManager.downloadModelIfNeeded()
-                loadBodyParts()
-                loadExercises()
+                loadBodyParts()   // suspend → chờ xong mới
+                loadExercises()   // suspend → chờ xong mới
             }
         }
 
@@ -69,12 +69,12 @@ class ExerciseLibraryViewModel @Inject constructor(
         if (_state.value.selectedBodyPart == bodyPart) return
         _state.update { it.copy(selectedBodyPart = bodyPart, searchQuery = "", exercises = emptyList()) }
         _searchQuery.value = ""
-        loadExercises(bodyPart = bodyPart)
+        viewModelScope.launch { loadExercises(bodyPart = bodyPart) }
     }
 
     fun retry() {
         if (apiKey.isBlank()) return
-        loadExercises(_state.value.selectedBodyPart)
+        viewModelScope.launch { loadExercises(_state.value.selectedBodyPart) }
     }
 
     private suspend fun translateExercises(list: List<ExerciseInfo>): List<ExerciseInfo> {
@@ -96,43 +96,42 @@ class ExerciseLibraryViewModel @Inject constructor(
         return jobs.awaitAll()
     }
 
-    private fun loadBodyParts() {
-        viewModelScope.launch {
-            repository.getBodyPartList(apiKey).onSuccess { parts ->
-                val trParts = parts.map { async { translatorManager.translate(it) } }.awaitAll()
-                _state.update { it.copy(bodyParts = listOf("all") + trParts) }
-            }
+    private suspend fun loadBodyParts() {
+        repository.getBodyPartList(apiKey).onSuccess { parts ->
+            val trParts = parts.map { viewModelScope.async { it to translatorManager.translate(it) } }.awaitAll()
+            val allTranslated = translatorManager.translate("all")
+            _state.update { it.copy(bodyParts = listOf("all" to allTranslated) + trParts) }
         }
     }
 
-    private fun loadExercises(bodyPart: String = "all") {
-        viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, error = null) }
-            val result = if (bodyPart == "all") {
-                repository.getExercises(apiKey, limit = 30)
-            } else {
-                repository.getExercisesByBodyPart(apiKey, bodyPart, limit = 30)
-            }
-            result
-                .onSuccess { list ->
-                    _state.update { it.copy(isLoading = false, exercises = list) }
-                }
-                .onFailure { e ->
-                    _state.update { it.copy(isLoading = false, error = "Không tải được dữ liệu: ${e.message}") }
-                }
+    private suspend fun loadExercises(bodyPart: String = "all") {
+        _state.update { it.copy(isLoading = true, error = null, isTranslating = true) }
+        val result = if (bodyPart == "all") {
+            repository.getExercises(apiKey, limit = 30)
+        } else {
+            repository.getExercisesByBodyPart(apiKey, bodyPart, limit = 30)
         }
+        result
+            .onSuccess { list ->
+                val translated = translateExercises(list)
+                _state.update { it.copy(isLoading = false, isTranslating = false, exercises = translated) }
+            }
+            .onFailure { e ->
+                _state.update { it.copy(isLoading = false, isTranslating = false, error = "Không tải được dữ liệu: ${e.message}") }
+            }
     }
 
     private fun onSearch(query: String) {
         if (query.isBlank()) {
-            loadExercises(_state.value.selectedBodyPart)
+            viewModelScope.launch { loadExercises(_state.value.selectedBodyPart) }
             return
         }
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
             repository.searchByName(apiKey, query)
                 .onSuccess { list ->
-                    _state.update { it.copy(isLoading = false, exercises = list) }
+                    val translated = translateExercises(list) // ← FIX: dịch kết quả tìm kiếm
+                    _state.update { it.copy(isLoading = false, exercises = translated) }
                 }
                 .onFailure { e ->
                     _state.update { it.copy(isLoading = false, error = "Lỗi tìm kiếm: ${e.message}") }

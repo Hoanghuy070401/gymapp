@@ -29,10 +29,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.ImageLoader
 import coil.compose.AsyncImage
-import coil.decode.GifDecoder
-import coil.decode.ImageDecoderDecoder
 import coil.request.ImageRequest
 import com.gym.core.designsystem.component.EmptyContent
 import com.gym.core.designsystem.component.GymScaffold
@@ -48,6 +45,8 @@ fun ExerciseLibraryScreen(
     onBack: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
+    // Singleton ImageLoader hoisted ở đây, không khởi tạo lại ở mỗi card
+    val imageLoader = rememberGifImageLoader()
 
     GymScaffold(scrollable = false) {
         ExerciseLibraryTopBar(onBack = onBack)
@@ -55,6 +54,7 @@ fun ExerciseLibraryScreen(
             state.noApiKey -> NoApiKeyBanner()
             else -> ExerciseLibraryContent(
                 state = state,
+                imageLoader = imageLoader,
                 onSearchChanged = viewModel::onSearchQueryChanged,
                 onBodyPartSelected = viewModel::onBodyPartSelected,
                 onExerciseClick = onNavigateToDetail,
@@ -99,6 +99,7 @@ private fun ExerciseLibraryTopBar(onBack: () -> Unit) {
 @Composable
 private fun ExerciseLibraryContent(
     state: ExerciseLibraryState,
+    imageLoader: coil.ImageLoader,
     onSearchChanged: (String) -> Unit,
     onBodyPartSelected: (String) -> Unit,
     onExerciseClick: (ExerciseInfo) -> Unit,
@@ -121,11 +122,21 @@ private fun ExerciseLibraryContent(
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Hiện spinner phụ khi đang dịch (ML Kit chạy nền)
+        if (state.isTranslating && !state.isLoading) {
+            LinearProgressIndicator(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = AppSpacing.ScreenHorizontal),
+                color = AppColors.ElectricLime,
+                trackColor = AppColors.SurfaceContainerHigh
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+        }
+
         when {
             state.isLoading -> LoadingContent()
             state.error != null -> ErrorContent(message = state.error, onRetry = onRetry)
             state.exercises.isEmpty() -> EmptyContent(stringResource(id = R.string.no_exercises_found))
-            else -> ExerciseGrid(exercises = state.exercises, onExerciseClick = onExerciseClick)
+            else -> ExerciseGrid(exercises = state.exercises, imageLoader = imageLoader, onExerciseClick = onExerciseClick)
         }
     }
 }
@@ -164,7 +175,7 @@ private fun SearchBar(
 
 @Composable
 private fun BodyPartChipRow(
-    bodyParts: List<String>,
+    bodyParts: List<Pair<String, String>>,
     selected: String,
     onSelected: (String) -> Unit
 ) {
@@ -173,18 +184,18 @@ private fun BodyPartChipRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
-        items(bodyParts) { part ->
-            val isSelected = part == selected
+        items(bodyParts, key = { it.first }) { part ->
+            val isSelected = part.first == selected
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(20.dp))
                     .background(if (isSelected) AppColors.ElectricLime else AppColors.SurfaceContainerHigh)
-                    .clickable { onSelected(part) }
+                    .clickable { onSelected(part.first) }
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = part.replaceFirstChar { it.uppercase() },
+                    text = part.second.replaceFirstChar { it.uppercase() },
                     color = if (isSelected) AppColors.Surface else AppColors.OnSurface,
                     fontSize = 12.sp,
                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
@@ -199,6 +210,7 @@ private fun BodyPartChipRow(
 @Composable
 private fun ExerciseGrid(
     exercises: List<ExerciseInfo>,
+    imageLoader: coil.ImageLoader,
     onExerciseClick: (ExerciseInfo) -> Unit
 ) {
     LazyVerticalGrid(
@@ -212,7 +224,7 @@ private fun ExerciseGrid(
         modifier = Modifier.fillMaxSize()
     ) {
         items(exercises, key = { it.id }) { exercise ->
-            ExerciseCard(exercise = exercise, onClick = { onExerciseClick(exercise) })
+            ExerciseCard(exercise = exercise, imageLoader = imageLoader, onClick = { onExerciseClick(exercise) })
         }
     }
 }
@@ -222,20 +234,10 @@ private fun ExerciseGrid(
 @Composable
 private fun ExerciseCard(
     exercise: ExerciseInfo,
+    imageLoader: coil.ImageLoader,
     onClick: () -> Unit
 ) {
     val context = LocalContext.current
-    val imageLoader = remember {
-        ImageLoader.Builder(context)
-            .components {
-                if (Build.VERSION.SDK_INT >= 28) {
-                    add(ImageDecoderDecoder.Factory())
-                } else {
-                    add(GifDecoder.Factory())
-                }
-            }
-            .build()
-    }
 
     Card(
         shape = RoundedCornerShape(16.dp),

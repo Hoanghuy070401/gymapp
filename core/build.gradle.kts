@@ -41,4 +41,8 @@ dependencies {
 
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
+
+    // ML Kit Translation & Play Services Tasks (for compile)
+    api("com.google.mlkit:translate:17.0.3")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
 }
