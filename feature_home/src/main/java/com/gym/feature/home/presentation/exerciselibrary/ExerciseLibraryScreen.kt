@@ -49,18 +49,15 @@ fun ExerciseLibraryScreen(
 
     GymScaffold(scrollable = false) {
         ExerciseLibraryTopBar(onBack = onBack)
-        when {
-            state.noApiKey -> NoApiKeyBanner()
-            else -> ExerciseLibraryContent(
-                state = state,
-                imageLoader = imageLoader,
-                onSearchChanged = viewModel::onSearchQueryChanged,
-                onBodyPartSelected = viewModel::onBodyPartSelected,
-                onExerciseClick = onNavigateToDetail,
-                onRetry = viewModel::retry,
-                onTogglePersonalization = viewModel::togglePersonalization
-            )
-        }
+        ExerciseLibraryContent(
+            state = state,
+            imageLoader = imageLoader,
+            onSearchChanged = viewModel::onSearchQueryChanged,
+            onBodyPartSelected = viewModel::onBodyPartSelected,
+            onExerciseClick = onNavigateToDetail,
+            onRetry = viewModel::retry,
+            onTogglePersonalization = viewModel::togglePersonalization
+        )
     }
 }
 
@@ -393,31 +390,4 @@ private fun ErrorContent(message: String, onRetry: () -> Unit) {
     }
 }
 
-// ── No API Key Banner ─────────────────────────────────────────────────────────
 
-@Composable
-private fun NoApiKeyBanner() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(AppSpacing.ScreenHorizontal)
-        ) {
-            Text(text = "🔑", fontSize = 48.sp, textAlign = TextAlign.Center)
-            Spacer(modifier = Modifier.height(AppSpacing.Medium))
-            Text(
-                text = "Cần RapidAPI Key",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = AppColors.OnSurface
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Thêm EXERCISEDB_API_KEY vào local.properties\n" +
-                        "Lấy key miễn phí tại rapidapi.com",
-                style = MaterialTheme.typography.bodySmall,
-                color = AppColors.OnSurfaceVariant,
-                textAlign = TextAlign.Center
-            )
-        }
-    }
-}
