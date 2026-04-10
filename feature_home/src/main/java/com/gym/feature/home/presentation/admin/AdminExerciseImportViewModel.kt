@@ -38,8 +38,8 @@ class AdminExerciseImportViewModel @Inject constructor(
     private fun loadBodyParts() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
-            // Fetch từ API để có danh sách đầy đủ
-            repository.getBodyPartList(apiKey).onSuccess { parts ->
+            // Admin: gọi ExerciseDB API để lấy danh sách body parts đầy đủ
+            repository.fetchBodyPartListFromApi(apiKey).onSuccess { parts ->
                 // Kiểm tra part nào đã import vào Firebase
                 val imported = parts.filter { cache.hasBodyPart(it) }.toSet()
                 _state.update { it.copy(

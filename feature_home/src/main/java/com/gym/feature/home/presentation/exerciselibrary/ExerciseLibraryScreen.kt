@@ -184,11 +184,42 @@ private fun ExerciseLibraryContent(
         }
 
         when {
-            state.isLoading -> LoadingContent()
+            state.isLoading     -> LoadingContent()
             state.error != null -> ErrorContent(message = state.error, onRetry = onRetry)
-            state.exercises.isEmpty() -> EmptyContent(stringResource(id = R.string.no_exercises_found))
+            state.isEmpty || (state.exercises.isEmpty() && !state.isTranslating)
+                                -> AdminNotImportedBanner()
             else -> ExerciseGrid(exercises = state.exercises, imageLoader = imageLoader, onExerciseClick = onExerciseClick)
         }
+    }
+}
+
+// ── Admin Not Imported Banner ────────────────────────────────────────────────
+
+@Composable
+private fun AdminNotImportedBanner() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(text = "🏋️", fontSize = 56.sp)
+        Spacer(Modifier.height(16.dp))
+        Text(
+            text = "Chưa có bài tập nào",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = AppColors.OnSurface
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            text = "Quản trị viên cần import bài tập lên Firebase trước.\nMở tab Thư viện → nhấn nút ➕ để vào trang Import.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = AppColors.OnSurfaceVariant,
+            textAlign = TextAlign.Center,
+            lineHeight = 20.sp
+        )
     }
 }
 

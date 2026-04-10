@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gym.core.translation.TranslatorManager
 import com.gym.domain.model.ExerciseInfo
-import com.gym.feature.home.BuildConfig
 import com.gym.feature.home.data.UserProfile
 import com.gym.feature.home.data.UserProfileRepository
 import com.gym.feature.home.data.exercisedb.ExerciseAgeFilter
@@ -24,12 +23,12 @@ data class ExerciseLibraryState(
     val selectedBodyPart: String = "all",
     val searchQuery: String = "",
     val error: String? = null,
-    val noApiKey: Boolean = false,
     val isTranslating: Boolean = false,
+    val isEmpty: Boolean = false,          // true = Firebase trống, admin chưa import
     // Personalization
     val userProfile: UserProfile? = null,
-    val isPersonalized: Boolean = false,  // true = đang lọc theo profile
-    val ageGroupLabel: String = ""        // hiển thị "Thanh niên (25 tuổi)"
+    val isPersonalized: Boolean = false,
+    val ageGroupLabel: String = ""
 )
 
 @OptIn(FlowPreview::class)
@@ -46,22 +45,16 @@ class ExerciseLibraryViewModel @Inject constructor(
     private val _searchQuery = MutableStateFlow("")
     private var userProfile: UserProfile? = null
 
-    private val apiKey: String get() = BuildConfig.EXERCISEDB_API_KEY
-
     init {
-        if (apiKey.isBlank()) {
-            _state.update { it.copy(noApiKey = true) }
-        } else {
-            viewModelScope.launch {
-                _state.update { it.copy(isTranslating = true) }
-                // 1. Tải model dịch thuật
-                translatorManager.downloadModelIfNeeded()
-                // 2. Tải user profile để personalize
-                loadUserProfile()
-                // 3. Tải body parts + bài tập
-                loadBodyParts()
-                loadExercises()
-            }
+        viewModelScope.launch {
+            _state.update { it.copy(isTranslating = true) }
+            // 1. Download ML Kit translation model
+            translatorManager.downloadModelIfNeeded()
+            // 2. Load user profile (for personalization)
+            loadUserProfile()
+            // 3. Load body parts & exercises — Firebase only
+            loadBodyParts()
+            loadExercises()
         }
 
         // Debounced search (500ms)
@@ -84,7 +77,7 @@ class ExerciseLibraryViewModel @Inject constructor(
         viewModelScope.launch { loadExercises(bodyPart = bodyPart) }
     }
 
-    /** Bật/tắt cá nhân hoá theo độ tuổi & mục tiêu */
+    /** Bật/tắt cá nhân hoá theo tuổi & mục tiêu */
     fun togglePersonalization() {
         val current = _state.value.isPersonalized
         _state.update { it.copy(isPersonalized = !current) }
@@ -92,7 +85,6 @@ class ExerciseLibraryViewModel @Inject constructor(
     }
 
     fun retry() {
-        if (apiKey.isBlank()) return
         viewModelScope.launch { loadExercises(_state.value.selectedBodyPart) }
     }
 
@@ -109,42 +101,43 @@ class ExerciseLibraryViewModel @Inject constructor(
                     )
                 }
             }
-            // Profile không tải được → vẫn tiếp tục, chỉ không có personalization
     }
 
     private suspend fun loadBodyParts() {
-        repository.getBodyPartList(apiKey).onSuccess { parts ->
-            val trParts = parts.map {
-                viewModelScope.async { it to translatorManager.translate(it) }
-            }.awaitAll()
-            val allTranslated = translatorManager.translate("all")
-            _state.update { it.copy(bodyParts = listOf("all" to allTranslated) + trParts) }
-        }
+        repository.getBodyPartList()
+            .onSuccess { parts ->
+                if (parts.isEmpty()) return@onSuccess   // admin chưa import → giữ mặc định "all"
+                val trParts = parts.map {
+                    viewModelScope.async { it to translatorManager.translate(it) }
+                }.awaitAll()
+                val allTranslated = translatorManager.translate("all")
+                _state.update { it.copy(bodyParts = listOf("all" to allTranslated) + trParts) }
+            }
     }
 
     private suspend fun loadExercises(bodyPart: String = "all") {
-        _state.update { it.copy(isLoading = true, error = null, isTranslating = true) }
+        _state.update { it.copy(isLoading = true, error = null, isEmpty = false, isTranslating = true) }
 
         val result = if (bodyPart == "all") {
-            repository.getExercises(apiKey, limit = 30)
+            repository.getExercises(limit = 30)
         } else {
-            repository.getExercisesByBodyPart(apiKey, bodyPart, limit = 30)
+            repository.getExercisesByBodyPart(bodyPart, limit = 30)
         }
 
         result
             .onSuccess { list ->
-                // Apply age filter nếu bật personalization và có profile
-                val filtered = applyPersonalization(list)
-                val translated = translateExercises(filtered)
-                _state.update { it.copy(isLoading = false, isTranslating = false, exercises = translated) }
+                if (list.isEmpty()) {
+                    // Admin chưa import data — hiện thông báo rõ ràng
+                    _state.update { it.copy(isLoading = false, isTranslating = false, isEmpty = true) }
+                    return@onSuccess
+                }
+                val filtered    = applyPersonalization(list)
+                val translated  = translateExercises(filtered)
+                _state.update { it.copy(isLoading = false, isTranslating = false, exercises = translated, isEmpty = false) }
             }
             .onFailure { e ->
                 _state.update {
-                    it.copy(
-                        isLoading = false,
-                        isTranslating = false,
-                        error = "Không tải được dữ liệu: ${e.message}"
-                    )
+                    it.copy(isLoading = false, isTranslating = false, error = "Lỗi đọc Firebase: ${e.message}")
                 }
             }
     }
@@ -156,11 +149,11 @@ class ExerciseLibraryViewModel @Inject constructor(
         }
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
-            repository.searchByName(apiKey, query)
+            repository.searchByName(query)
                 .onSuccess { list ->
-                    val filtered = applyPersonalization(list)
+                    val filtered   = applyPersonalization(list)
                     val translated = translateExercises(filtered)
-                    _state.update { it.copy(isLoading = false, exercises = translated) }
+                    _state.update { it.copy(isLoading = false, exercises = translated, isEmpty = list.isEmpty()) }
                 }
                 .onFailure { e ->
                     _state.update { it.copy(isLoading = false, error = "Lỗi tìm kiếm: ${e.message}") }
@@ -168,10 +161,6 @@ class ExerciseLibraryViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Áp dụng lọc & sắp xếp theo tuổi / mục tiêu / activity level.
-     * Chỉ áp dụng khi isPersonalized = true và profile đã tải.
-     */
     private fun applyPersonalization(list: List<ExerciseInfo>): List<ExerciseInfo> {
         val profile = userProfile ?: return list
         if (!_state.value.isPersonalized) return list
@@ -188,7 +177,6 @@ class ExerciseLibraryViewModel @Inject constructor(
         val jobs = list.map { ex ->
             viewModelScope.async {
                 ex.copy(
-                    // name giữ nguyên tiếng Anh
                     bodyPart         = translatorManager.translate(ex.bodyPart),
                     equipment        = translatorManager.translate(ex.equipment),
                     target           = translatorManager.translate(ex.target),

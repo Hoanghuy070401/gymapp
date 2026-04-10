@@ -26,6 +26,7 @@ import com.gym.feature.auth.presentation.AuthViewModel;
 import com.gym.feature.auth.presentation.AuthViewModel_HiltModules;
 import com.gym.feature.auth.presentation.setup.SetupViewModel;
 import com.gym.feature.auth.presentation.setup.SetupViewModel_HiltModules;
+import com.gym.feature.home.data.UserProfileRepository;
 import com.gym.feature.home.data.VideoRepository;
 import com.gym.feature.home.data.exercisedb.ExerciseFirebaseCache;
 import com.gym.feature.home.data.exercisedb.ExerciseRepository;
@@ -421,45 +422,45 @@ public final class DaggerGymApplication_HiltComponents_SingletonC {
 
     @IdentifierNameString
     private static final class LazyClassKeyProvider {
-      static String com_gym_feature_home_presentation_video_AddVideoViewModel = "com.gym.feature.home.presentation.video.AddVideoViewModel";
+      static String com_gym_feature_home_presentation_video_BulkImportViewModel = "com.gym.feature.home.presentation.video.BulkImportViewModel";
 
-      static String com_gym_feature_home_presentation_HomeViewModel = "com.gym.feature.home.presentation.HomeViewModel";
+      static String com_gym_feature_home_presentation_video_AddVideoViewModel = "com.gym.feature.home.presentation.video.AddVideoViewModel";
 
       static String com_gym_feature_workout_presentation_WorkoutViewModel = "com.gym.feature.workout.presentation.WorkoutViewModel";
 
-      static String com_gym_feature_auth_presentation_AuthViewModel = "com.gym.feature.auth.presentation.AuthViewModel";
-
-      static String com_gym_feature_home_presentation_video_BulkImportViewModel = "com.gym.feature.home.presentation.video.BulkImportViewModel";
-
-      static String com_gym_feature_auth_presentation_setup_SetupViewModel = "com.gym.feature.auth.presentation.setup.SetupViewModel";
-
       static String com_gym_feature_home_presentation_admin_AdminExerciseImportViewModel = "com.gym.feature.home.presentation.admin.AdminExerciseImportViewModel";
+
+      static String com_gym_feature_auth_presentation_AuthViewModel = "com.gym.feature.auth.presentation.AuthViewModel";
 
       static String com_gym_feature_home_presentation_exerciselibrary_ExerciseLibraryViewModel = "com.gym.feature.home.presentation.exerciselibrary.ExerciseLibraryViewModel";
 
-      @KeepFieldType
-      AddVideoViewModel com_gym_feature_home_presentation_video_AddVideoViewModel2;
+      static String com_gym_feature_home_presentation_HomeViewModel = "com.gym.feature.home.presentation.HomeViewModel";
 
-      @KeepFieldType
-      HomeViewModel com_gym_feature_home_presentation_HomeViewModel2;
-
-      @KeepFieldType
-      WorkoutViewModel com_gym_feature_workout_presentation_WorkoutViewModel2;
-
-      @KeepFieldType
-      AuthViewModel com_gym_feature_auth_presentation_AuthViewModel2;
+      static String com_gym_feature_auth_presentation_setup_SetupViewModel = "com.gym.feature.auth.presentation.setup.SetupViewModel";
 
       @KeepFieldType
       BulkImportViewModel com_gym_feature_home_presentation_video_BulkImportViewModel2;
 
       @KeepFieldType
-      SetupViewModel com_gym_feature_auth_presentation_setup_SetupViewModel2;
+      AddVideoViewModel com_gym_feature_home_presentation_video_AddVideoViewModel2;
+
+      @KeepFieldType
+      WorkoutViewModel com_gym_feature_workout_presentation_WorkoutViewModel2;
 
       @KeepFieldType
       AdminExerciseImportViewModel com_gym_feature_home_presentation_admin_AdminExerciseImportViewModel2;
 
       @KeepFieldType
+      AuthViewModel com_gym_feature_auth_presentation_AuthViewModel2;
+
+      @KeepFieldType
       ExerciseLibraryViewModel com_gym_feature_home_presentation_exerciselibrary_ExerciseLibraryViewModel2;
+
+      @KeepFieldType
+      HomeViewModel com_gym_feature_home_presentation_HomeViewModel2;
+
+      @KeepFieldType
+      SetupViewModel com_gym_feature_auth_presentation_setup_SetupViewModel2;
     }
   }
 
@@ -535,17 +536,17 @@ public final class DaggerGymApplication_HiltComponents_SingletonC {
     private static final class LazyClassKeyProvider {
       static String com_gym_feature_auth_presentation_setup_SetupViewModel = "com.gym.feature.auth.presentation.setup.SetupViewModel";
 
-      static String com_gym_feature_home_presentation_video_AddVideoViewModel = "com.gym.feature.home.presentation.video.AddVideoViewModel";
+      static String com_gym_feature_home_presentation_video_BulkImportViewModel = "com.gym.feature.home.presentation.video.BulkImportViewModel";
 
       static String com_gym_feature_home_presentation_HomeViewModel = "com.gym.feature.home.presentation.HomeViewModel";
 
-      static String com_gym_feature_home_presentation_video_BulkImportViewModel = "com.gym.feature.home.presentation.video.BulkImportViewModel";
+      static String com_gym_feature_home_presentation_video_AddVideoViewModel = "com.gym.feature.home.presentation.video.AddVideoViewModel";
 
-      static String com_gym_feature_workout_presentation_WorkoutViewModel = "com.gym.feature.workout.presentation.WorkoutViewModel";
+      static String com_gym_feature_home_presentation_exerciselibrary_ExerciseLibraryViewModel = "com.gym.feature.home.presentation.exerciselibrary.ExerciseLibraryViewModel";
 
       static String com_gym_feature_home_presentation_admin_AdminExerciseImportViewModel = "com.gym.feature.home.presentation.admin.AdminExerciseImportViewModel";
 
-      static String com_gym_feature_home_presentation_exerciselibrary_ExerciseLibraryViewModel = "com.gym.feature.home.presentation.exerciselibrary.ExerciseLibraryViewModel";
+      static String com_gym_feature_workout_presentation_WorkoutViewModel = "com.gym.feature.workout.presentation.WorkoutViewModel";
 
       static String com_gym_feature_auth_presentation_AuthViewModel = "com.gym.feature.auth.presentation.AuthViewModel";
 
@@ -553,22 +554,22 @@ public final class DaggerGymApplication_HiltComponents_SingletonC {
       SetupViewModel com_gym_feature_auth_presentation_setup_SetupViewModel2;
 
       @KeepFieldType
-      AddVideoViewModel com_gym_feature_home_presentation_video_AddVideoViewModel2;
+      BulkImportViewModel com_gym_feature_home_presentation_video_BulkImportViewModel2;
 
       @KeepFieldType
       HomeViewModel com_gym_feature_home_presentation_HomeViewModel2;
 
       @KeepFieldType
-      BulkImportViewModel com_gym_feature_home_presentation_video_BulkImportViewModel2;
+      AddVideoViewModel com_gym_feature_home_presentation_video_AddVideoViewModel2;
 
       @KeepFieldType
-      WorkoutViewModel com_gym_feature_workout_presentation_WorkoutViewModel2;
+      ExerciseLibraryViewModel com_gym_feature_home_presentation_exerciselibrary_ExerciseLibraryViewModel2;
 
       @KeepFieldType
       AdminExerciseImportViewModel com_gym_feature_home_presentation_admin_AdminExerciseImportViewModel2;
 
       @KeepFieldType
-      ExerciseLibraryViewModel com_gym_feature_home_presentation_exerciselibrary_ExerciseLibraryViewModel2;
+      WorkoutViewModel com_gym_feature_workout_presentation_WorkoutViewModel2;
 
       @KeepFieldType
       AuthViewModel com_gym_feature_auth_presentation_AuthViewModel2;
@@ -608,7 +609,7 @@ public final class DaggerGymApplication_HiltComponents_SingletonC {
           return (T) new BulkImportViewModel(singletonCImpl.bulkImporterServiceProvider.get());
 
           case 4: // com.gym.feature.home.presentation.exerciselibrary.ExerciseLibraryViewModel 
-          return (T) new ExerciseLibraryViewModel(singletonCImpl.exerciseRepositoryProvider.get(), singletonCImpl.translatorManagerProvider.get());
+          return (T) new ExerciseLibraryViewModel(singletonCImpl.exerciseRepositoryProvider.get(), singletonCImpl.translatorManagerProvider.get(), singletonCImpl.userProfileRepositoryProvider.get());
 
           case 5: // com.gym.feature.home.presentation.HomeViewModel 
           return (T) new HomeViewModel(singletonCImpl.videoRepositoryProvider.get());
@@ -713,6 +714,8 @@ public final class DaggerGymApplication_HiltComponents_SingletonC {
 
     private Provider<TranslatorManager> translatorManagerProvider;
 
+    private Provider<UserProfileRepository> userProfileRepositoryProvider;
+
     private Provider<ProfileImageStorage> provideProfileImageStorageProvider;
 
     private Provider<GymDatabase> provideGymDatabaseProvider;
@@ -738,10 +741,11 @@ public final class DaggerGymApplication_HiltComponents_SingletonC {
       this.provideAuthRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<AuthRepository>(singletonCImpl, 4));
       this.bulkImporterServiceProvider = DoubleCheck.provider(new SwitchingProvider<BulkImporterService>(singletonCImpl, 5));
       this.translatorManagerProvider = DoubleCheck.provider(new SwitchingProvider<TranslatorManager>(singletonCImpl, 6));
-      this.provideProfileImageStorageProvider = DoubleCheck.provider(new SwitchingProvider<ProfileImageStorage>(singletonCImpl, 7));
-      this.provideGymDatabaseProvider = DoubleCheck.provider(new SwitchingProvider<GymDatabase>(singletonCImpl, 10));
-      this.provideWorkoutDaoProvider = DoubleCheck.provider(new SwitchingProvider<WorkoutDao>(singletonCImpl, 9));
-      this.workoutRepositoryImplProvider = new SwitchingProvider<>(singletonCImpl, 8);
+      this.userProfileRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<UserProfileRepository>(singletonCImpl, 7));
+      this.provideProfileImageStorageProvider = DoubleCheck.provider(new SwitchingProvider<ProfileImageStorage>(singletonCImpl, 8));
+      this.provideGymDatabaseProvider = DoubleCheck.provider(new SwitchingProvider<GymDatabase>(singletonCImpl, 11));
+      this.provideWorkoutDaoProvider = DoubleCheck.provider(new SwitchingProvider<WorkoutDao>(singletonCImpl, 10));
+      this.workoutRepositoryImplProvider = new SwitchingProvider<>(singletonCImpl, 9);
       this.bindWorkoutRepositoryProvider = DoubleCheck.provider((Provider) workoutRepositoryImplProvider);
     }
 
@@ -799,16 +803,19 @@ public final class DaggerGymApplication_HiltComponents_SingletonC {
           case 6: // com.gym.core.translation.TranslatorManager 
           return (T) new TranslatorManager();
 
-          case 7: // com.gym.feature.auth.data.ProfileImageStorage 
+          case 7: // com.gym.feature.home.data.UserProfileRepository 
+          return (T) new UserProfileRepository();
+
+          case 8: // com.gym.feature.auth.data.ProfileImageStorage 
           return (T) AuthModule_ProvideProfileImageStorageFactory.provideProfileImageStorage(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
-          case 8: // com.gym.data.repository.WorkoutRepositoryImpl 
+          case 9: // com.gym.data.repository.WorkoutRepositoryImpl 
           return (T) new WorkoutRepositoryImpl(singletonCImpl.provideWorkoutDaoProvider.get());
 
-          case 9: // com.gym.data.local.WorkoutDao 
+          case 10: // com.gym.data.local.WorkoutDao 
           return (T) DatabaseModule_ProvideWorkoutDaoFactory.provideWorkoutDao(singletonCImpl.provideGymDatabaseProvider.get());
 
-          case 10: // com.gym.data.local.GymDatabase 
+          case 11: // com.gym.data.local.GymDatabase 
           return (T) DatabaseModule_ProvideGymDatabaseFactory.provideGymDatabase(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
           default: throw new AssertionError(id);

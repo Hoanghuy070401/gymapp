@@ -6,6 +6,7 @@ import com.gym.feature.auth.di.AuthModule;
 import com.gym.feature.auth.presentation.AuthViewModel_HiltModules;
 import com.gym.feature.auth.presentation.setup.SetupViewModel_HiltModules;
 import com.gym.feature.home.presentation.HomeViewModel_HiltModules;
+import com.gym.feature.home.presentation.admin.AdminExerciseImportViewModel_HiltModules;
 import com.gym.feature.home.presentation.exerciselibrary.ExerciseLibraryViewModel_HiltModules;
 import com.gym.feature.home.presentation.video.AddVideoViewModel_HiltModules;
 import com.gym.feature.home.presentation.video.BulkImportViewModel_HiltModules;
@@ -164,6 +165,7 @@ public final class GymApplication_HiltComponents {
   @Subcomponent(
       modules = {
           AddVideoViewModel_HiltModules.KeyModule.class,
+          AdminExerciseImportViewModel_HiltModules.KeyModule.class,
           AuthViewModel_HiltModules.KeyModule.class,
           BulkImportViewModel_HiltModules.KeyModule.class,
           ExerciseLibraryViewModel_HiltModules.KeyModule.class,
@@ -210,6 +212,7 @@ public final class GymApplication_HiltComponents {
   @Subcomponent(
       modules = {
           AddVideoViewModel_HiltModules.BindsModule.class,
+          AdminExerciseImportViewModel_HiltModules.BindsModule.class,
           AuthViewModel_HiltModules.BindsModule.class,
           BulkImportViewModel_HiltModules.BindsModule.class,
           ExerciseLibraryViewModel_HiltModules.BindsModule.class,
